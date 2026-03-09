@@ -17,6 +17,9 @@
     "main": [
       "io.arona74.crlayersextras.CRLayersExtras"
     ],
+    "client": [
+      "io.arona74.crlayersextras.client.CRLayersExtrasClient"
+    ],
     "modmenu": [
       "io.arona74.crlayersextras.ModMenuIntegration"
     ]

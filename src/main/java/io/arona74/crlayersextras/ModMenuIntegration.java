@@ -56,6 +56,20 @@ public class ModMenuIntegration implements ModMenuApi {
                     .setSaveConsumer(val -> config.enableLayersFallWithSand = val)
                     .build());
 
+            general.addEntry(entryBuilder.startBooleanToggle(
+                            Text.literal("Plant Offset on Layer Blocks"), config.enableBlockOffset)
+                    .setDefaultValue(true)
+                    .setTooltip(Text.literal("Shifts plants/flowers down visually when placed on partial-height layer blocks."))
+                    .setSaveConsumer(val -> config.enableBlockOffset = val)
+                    .build());
+
+            general.addEntry(entryBuilder.startBooleanToggle(
+                            Text.literal("Vanilla Plant Offset"), config.VanillaBlockOffset)
+                    .setDefaultValue(true)
+                    .setTooltip(Text.literal("If on, vanilla plants (flowers, grass, saplings, etc.) receive the visual offset. If off, only blocks listed in 'AdditionalOffsetBlocks' in the JSON config get the offset. Requires resource reload (F3+T) to take effect."))
+                    .setSaveConsumer(val -> config.VanillaBlockOffset = val)
+                    .build());
+
             builder.setSavingRunnable(config::save);
             return builder.build();
         };

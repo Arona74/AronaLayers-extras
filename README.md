@@ -30,13 +30,33 @@ This mod adds natural mechanics to Conquest Reforged layer blocks:
 - When a sand or gravel block falls, any CR layer/slab blocks directly above it also fall
 - Cascades upward through multiple stacked layer blocks
 - Applies to `minecraft:sand`, `minecraft:red_sand`, and `minecraft:gravel`
+- Also triggers when a player breaks sand/gravel directly (layers above fall immediately)
+
+### 6. Plant Visual Offset on Layer Blocks
+- Plants and flowers placed on top of partial-height CR layer blocks are shifted downward visually to sit flush with the layer surface
+- Works for tall plants too (both the lower and upper half are offset correctly)
+- Applies to vanilla plants by default (flowers, tall grass, saplings, mushrooms, etc.)
+- Extra plants from other mods (e.g. Conquest Reforged's `conquest:seagrass`) can be added via the config
 
 ## Configuration
 
 All features can be toggled on or off individually. The config file is located at `config/crlayers-extras.json` and is created automatically on first launch.
 
+### Config options
+
+| Key | Default | Description |
+|-----|---------|-------------|
+| `enableGrassSpreading` | `true` | Grass spreads to CR loamy dirt slabs |
+| `enableMyceliumSpreading` | `true` | Mycelium spreads to CR loamy dirt slabs |
+| `enableSheepEatingGrassLayers` | `true` | Sheep can eat CR grass block layers |
+| `preventGrassDecay` | `true` | Grass blocks never decay to dirt in darkness |
+| `enableLayersFallWithSand` | `true` | CR layer blocks fall when sand/gravel falls or is broken |
+| `enableBlockOffset` | `true` | Plants are visually shifted down on partial-height layer blocks |
+| `VanillaBlockOffset` | `true` | Vanilla plants (flowers, grass, saplings, etc.) receive the visual offset. Set to `false` to restrict offset to blocks listed in `AdditionalOffsetBlocks` only. **Requires resource reload (F3+T) to take effect.** |
+| `AdditionalOffsetBlocks` | `["conquest:seagrass", "conquest:tall_seagrass", "minecraft:pink_petals"]` | Extra plant block IDs from other mods that should also receive the visual offset. **Requires resource reload (F3+T) to take effect.** |
+
 ### Mod Menu Support
-If you have [Mod Menu](https://modrinth.com/mod/modmenu) and [Cloth Config](https://modrinth.com/mod/cloth-config) installed, you can change settings in-game through the Mod Menu config screen. Changes take effect immediately without restarting.
+If you have [Mod Menu](https://modrinth.com/mod/modmenu) and [Cloth Config](https://modrinth.com/mod/cloth-config) installed, you can change most settings in-game through the Mod Menu config screen. Changes take effect immediately without restarting (except `VanillaBlockOffset` or `AdditionalOffsetBlocks`, which requires F3+T).
 
 ## Installation
 
