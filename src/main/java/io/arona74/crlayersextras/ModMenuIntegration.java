@@ -49,6 +49,13 @@ public class ModMenuIntegration implements ModMenuApi {
                     .setSaveConsumer(val -> config.preventGrassDecay = val)
                     .build());
 
+            general.addEntry(entryBuilder.startBooleanToggle(
+                            Text.literal("Layers Fall with Sand/Gravel"), config.enableLayersFallWithSand)
+                    .setDefaultValue(true)
+                    .setTooltip(Text.literal("CR layer blocks above sand or gravel fall when the sand/gravel falls"))
+                    .setSaveConsumer(val -> config.enableLayersFallWithSand = val)
+                    .build());
+
             builder.setSavingRunnable(config::save);
             return builder.build();
         };

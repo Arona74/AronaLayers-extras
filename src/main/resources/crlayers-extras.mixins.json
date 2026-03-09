@@ -6,7 +6,8 @@
   "mixins": [
     "SheepEntityMixin",
     "EatGrassGoalMixin",
-    "SpreadableBlockMixin"
+    "SpreadableBlockMixin",
+    "FallingBlockMixin"
   ],
   "client": [
   ],

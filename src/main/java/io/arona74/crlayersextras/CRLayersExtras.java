@@ -19,5 +19,6 @@ public class CRLayersExtras implements ModInitializer {
         GrassSpreadHandler.register();
         MyceliumSpreadHandler.register();
         SheepGrassEatingHandler.register();
+        LayerFallHandler.register();
     }
 }

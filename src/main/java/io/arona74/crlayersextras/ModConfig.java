@@ -18,6 +18,7 @@ public class ModConfig {
     public boolean enableMyceliumSpreading = true;
     public boolean enableSheepEatingGrassLayers = true;
     public boolean preventGrassDecay = true;
+    public boolean enableLayersFallWithSand = true;
 
     public static ModConfig getInstance() {
         if (INSTANCE == null) {

@@ -26,6 +26,11 @@ This mod adds natural mechanics to Conquest Reforged layer blocks:
 - Prevents `minecraft:grass_block` from turning into dirt when covered by a block (light level 0)
 - Useful for building with grass blocks underground or under structures
 
+### 5. Layer Blocks Fall with Sand/Gravel
+- When a sand or gravel block falls, any CR layer/slab blocks directly above it also fall
+- Cascades upward through multiple stacked layer blocks
+- Applies to `minecraft:sand`, `minecraft:red_sand`, and `minecraft:gravel`
+
 ## Configuration
 
 All features can be toggled on or off individually. The config file is located at `config/crlayers-extras.json` and is created automatically on first launch.
