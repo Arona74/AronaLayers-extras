@@ -1,7 +1,8 @@
-package io.arona74.crlayersextras.mixin;
+package io.arona74.aronalayersextras.mixin;
 
-import io.arona74.crlayersextras.LayerFallHandler;
-import io.arona74.crlayersextras.ModConfig;
+import io.arona74.aronalayersextras.LayerFallHandler;
+import io.arona74.aronalayersextras.ModConfig;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.FallingBlockEntity;
@@ -18,17 +19,13 @@ public class FallingBlockMixin {
     @Inject(method = "spawnFromBlock", at = @At("TAIL"))
     private static void onSpawnFromBlock(World world, BlockPos pos, BlockState state, CallbackInfoReturnable<FallingBlockEntity> cir) {
         if (!ModConfig.getInstance().enableLayersFallWithSand) return;
-
-        // Only trigger for sand and gravel (not concrete powder, etc.)
         if (!state.isOf(Blocks.SAND) && !state.isOf(Blocks.RED_SAND) && !state.isOf(Blocks.GRAVEL)) return;
 
-        // Cascade upward: make any CR layer/slab blocks above fall too.
-        // At this point, pos is already air (spawnFromBlock removed the block),
-        // so pos.up() is the first block that may have lost its support.
         BlockPos checkPos = pos.up();
         for (int i = 0; i < 32; i++) {
             BlockState above = world.getBlockState(checkPos);
             if (LayerFallHandler.isConquestLayerBlock(above)) {
+                world.setBlockState(checkPos, above.getFluidState().getBlockState(), Block.NOTIFY_LISTENERS);
                 FallingBlockEntity.spawnFromBlock(world, checkPos, above);
                 checkPos = checkPos.up();
             } else {
@@ -36,6 +33,4 @@ public class FallingBlockMixin {
             }
         }
     }
-
-
 }

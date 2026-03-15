@@ -1,4 +1,4 @@
-package io.arona74.crlayersextras;
+package io.arona74.aronalayersextras;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -14,7 +14,7 @@ import java.util.List;
 public class ModConfig {
     private static ModConfig INSTANCE;
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final String CONFIG_FILE = "crlayers-extras.json";
+    private static final String CONFIG_FILE = "aronalayersextras.json";
 
     public boolean enableGrassSpreading = true;
     public boolean enableMyceliumSpreading = true;
@@ -50,7 +50,7 @@ public class ModConfig {
                 INSTANCE.save();
                 return INSTANCE;
             } catch (Exception e) {
-                CRLayersExtras.LOGGER.error("Failed to load config, using defaults", e);
+                AronaLayersExtras.LOGGER.error("Failed to load config, using defaults", e);
             }
         }
         INSTANCE = new ModConfig();
@@ -63,7 +63,7 @@ public class ModConfig {
         try (Writer writer = Files.newBufferedWriter(configPath)) {
             GSON.toJson(this, writer);
         } catch (Exception e) {
-            CRLayersExtras.LOGGER.error("Failed to save config", e);
+            AronaLayersExtras.LOGGER.error("Failed to save config", e);
         }
     }
 }

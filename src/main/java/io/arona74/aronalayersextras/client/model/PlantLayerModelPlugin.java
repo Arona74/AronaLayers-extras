@@ -1,6 +1,6 @@
-package io.arona74.crlayersextras.client.model;
+package io.arona74.aronalayersextras.client.model;
 
-import io.arona74.crlayersextras.ModConfig;
+import io.arona74.aronalayersextras.ModConfig;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import net.minecraft.client.util.ModelIdentifier;
 

@@ -1,4 +1,4 @@
-package io.arona74.crlayersextras;
+package io.arona74.aronalayersextras;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.block.BlockState;
@@ -15,12 +15,14 @@ import java.util.Random;
 public class GrassSpreadHandler {
     private static final Identifier GRASS_LAYER_ID = new Identifier("conquest", "grass_block_layer");
     private static final Identifier LOAMY_DIRT_SLAB_ID = new Identifier("conquest", "loamy_dirt_slab");
+    private static final Identifier VLP_GRASS_LAYER_ID = new Identifier("vanillalayerplus", "grass_layer");
+    private static final Identifier VLP_DIRT_LAYER_ID = new Identifier("vanillalayerplus", "dirt_layer");
 
     private static final Random RANDOM = new Random();
 
     public static void register() {
         ServerTickEvents.END_WORLD_TICK.register(GrassSpreadHandler::onWorldTick);
-        CRLayersExtras.LOGGER.info("Registered grass spreading handler");
+        AronaLayersExtras.LOGGER.info("Registered grass spreading handler");
     }
 
     private static void onWorldTick(ServerWorld world) {
@@ -69,7 +71,9 @@ public class GrassSpreadHandler {
                             mutablePos.setY(checkY);
                             BlockState checkState = world.getBlockState(mutablePos);
 
-                            if (Registries.BLOCK.getId(checkState.getBlock()).equals(GRASS_LAYER_ID)
+                            Identifier checkId = Registries.BLOCK.getId(checkState.getBlock());
+                            if (checkId.equals(GRASS_LAYER_ID)
+                                    || checkId.equals(VLP_GRASS_LAYER_ID)
                                     || checkState.isOf(Blocks.GRASS_BLOCK)) {
                                 trySpreadGrass(world, mutablePos.toImmutable());
                                 break; // Found grass, try to spread it
@@ -101,17 +105,16 @@ public class GrassSpreadHandler {
 
     private static void trySpreadGrass(World world, BlockPos pos) {
         BlockState state = world.getBlockState(pos);
+        Identifier sourceId = Registries.BLOCK.getId(state.getBlock());
 
-        // Check if this is a grass layer block or vanilla grass block
-        if (!Registries.BLOCK.getId(state.getBlock()).equals(GRASS_LAYER_ID)
-                && !state.isOf(Blocks.GRASS_BLOCK)) {
-            return;
-        }
+        boolean isCRGrass = sourceId.equals(GRASS_LAYER_ID);
+        boolean isVLPGrass = sourceId.equals(VLP_GRASS_LAYER_ID);
+        boolean isVanillaGrass = state.isOf(Blocks.GRASS_BLOCK);
+
+        if (!isCRGrass && !isVLPGrass && !isVanillaGrass) return;
 
         // Check if there's enough light (same as vanilla grass)
-        if (world.getLightLevel(pos.up()) < 9) {
-            return;
-        }
+        if (world.getLightLevel(pos.up()) < 9) return;
 
         // Try to spread to neighboring blocks
         for (int i = 0; i < 4; i++) {
@@ -122,29 +125,19 @@ public class GrassSpreadHandler {
             );
 
             BlockState targetState = world.getBlockState(targetPos);
+            Identifier targetId = Registries.BLOCK.getId(targetState.getBlock());
 
-            // Check if target is loamy dirt slab
-            if (Registries.BLOCK.getId(targetState.getBlock()).equals(LOAMY_DIRT_SLAB_ID)) {
-                // Check light level above the dirt slab (same as vanilla grass spreading)
-                if (world.getLightLevel(targetPos.up()) >= 9) {
-                    // Get the grass layer block to spread
-                    BlockState grassLayerState = Registries.BLOCK.get(GRASS_LAYER_ID).getDefaultState();
+            if (world.getLightLevel(targetPos.up()) < 9) continue;
 
-                    // Copy properties from the dirt slab to maintain rotation, waterlogging, etc.
-                    // This ensures the grass layer inherits the same orientation
-                    grassLayerState = copyProperties(targetState, grassLayerState);
-
-                    world.setBlockState(targetPos, grassLayerState, 3);
-                }
-            }
-            // Also check if target is vanilla dirt block
-            else if (Registries.BLOCK.getId(targetState.getBlock()).toString().equals("minecraft:dirt")) {
+            if (targetId.equals(LOAMY_DIRT_SLAB_ID) && (isCRGrass || isVanillaGrass)) {
+                BlockState grassLayerState = copyProperties(targetState, Registries.BLOCK.get(GRASS_LAYER_ID).getDefaultState());
+                world.setBlockState(targetPos, grassLayerState, 3);
+            } else if (targetId.equals(VLP_DIRT_LAYER_ID) && (isVLPGrass || isVanillaGrass)) {
+                BlockState grassLayerState = copyProperties(targetState, Registries.BLOCK.get(VLP_GRASS_LAYER_ID).getDefaultState());
+                world.setBlockState(targetPos, grassLayerState, 3);
+            } else if (targetId.toString().equals("minecraft:dirt")) {
                 BlockState aboveState = world.getBlockState(targetPos.up());
-
-                // Only spread to dirt that has air above it
-                // This prevents fighting with vanilla decay mechanics (e.g., when a layer block is placed above grass)
-                if (aboveState.isAir() && world.getLightLevel(targetPos.up()) >= 9) {
-                    // Convert vanilla dirt to vanilla grass_block
+                if (aboveState.isAir()) {
                     world.setBlockState(targetPos, Blocks.GRASS_BLOCK.getDefaultState(), 3);
                 }
             }

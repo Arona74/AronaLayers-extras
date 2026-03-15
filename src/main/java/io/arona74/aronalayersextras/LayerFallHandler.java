@@ -1,6 +1,7 @@
-package io.arona74.crlayersextras;
+package io.arona74.aronalayersextras;
 
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
@@ -16,21 +17,19 @@ public class LayerFallHandler {
 
     public static void register() {
         PlayerBlockBreakEvents.AFTER.register(LayerFallHandler::onBlockBroken);
-        CRLayersExtras.LOGGER.info("Registered layer fall handler");
+        AronaLayersExtras.LOGGER.info("Registered layer fall handler");
     }
 
     private static void onBlockBroken(World world, PlayerEntity player, BlockPos pos, BlockState state, BlockEntity blockEntity) {
         if (!ModConfig.getInstance().enableLayersFallWithSand) return;
         if (!(world instanceof ServerWorld)) return;
-
-        // Only trigger when sand or gravel is broken directly by a player
         if (!state.isOf(Blocks.SAND) && !state.isOf(Blocks.RED_SAND) && !state.isOf(Blocks.GRAVEL)) return;
 
-        // Cascade CR layer/slab blocks above the broken sand/gravel
         BlockPos checkPos = pos.up();
         for (int i = 0; i < 32; i++) {
             BlockState above = world.getBlockState(checkPos);
             if (isConquestLayerBlock(above)) {
+                world.setBlockState(checkPos, above.getFluidState().getBlockState(), Block.NOTIFY_LISTENERS);
                 FallingBlockEntity.spawnFromBlock(world, checkPos, above);
                 checkPos = checkPos.up();
             } else {
@@ -41,7 +40,17 @@ public class LayerFallHandler {
 
     public static boolean isConquestLayerBlock(BlockState state) {
         Identifier id = Registries.BLOCK.getId(state.getBlock());
-        return "conquest".equals(id.getNamespace())
-                && (id.getPath().contains("layer") || id.getPath().contains("slab"));
+        String ns = id.getNamespace();
+        String path = id.getPath();
+        if ("conquest".equals(ns)) {
+            // Exclude mushroom layer blocks: CR's MushroomVanilla has a buggy
+            // getStateForNeighborUpdate that crashes when the block is removed.
+            if (path.contains("mushroom")) return false;
+            return path.contains("layer") || path.contains("slab");
+        }
+        if ("vanillalayerplus".equals(ns)) {
+            return path.endsWith("_layer");
+        }
+        return false;
     }
 }

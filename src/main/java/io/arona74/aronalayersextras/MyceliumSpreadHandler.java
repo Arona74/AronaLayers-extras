@@ -1,4 +1,4 @@
-package io.arona74.crlayersextras;
+package io.arona74.aronalayersextras;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.block.BlockState;
@@ -15,12 +15,14 @@ import java.util.Random;
 public class MyceliumSpreadHandler {
     private static final Identifier MYCELIUM_LAYER_ID = new Identifier("conquest", "mycelium_layer");
     private static final Identifier LOAMY_DIRT_SLAB_ID = new Identifier("conquest", "loamy_dirt_slab");
+    private static final Identifier VLP_MYCELIUM_LAYER_ID = new Identifier("vanillalayerplus", "mycelium_layer");
+    private static final Identifier VLP_DIRT_LAYER_ID = new Identifier("vanillalayerplus", "dirt_layer");
 
     private static final Random RANDOM = new Random();
 
     public static void register() {
         ServerTickEvents.END_WORLD_TICK.register(MyceliumSpreadHandler::onWorldTick);
-        CRLayersExtras.LOGGER.info("Registered mycelium spreading handler");
+        AronaLayersExtras.LOGGER.info("Registered mycelium spreading handler");
     }
 
     private static void onWorldTick(ServerWorld world) {
@@ -69,7 +71,8 @@ public class MyceliumSpreadHandler {
                             mutablePos.setY(checkY);
                             BlockState checkState = world.getBlockState(mutablePos);
 
-                            if (Registries.BLOCK.getId(checkState.getBlock()).equals(MYCELIUM_LAYER_ID)) {
+                            Identifier checkId = Registries.BLOCK.getId(checkState.getBlock());
+                            if (checkId.equals(MYCELIUM_LAYER_ID) || checkId.equals(VLP_MYCELIUM_LAYER_ID)) {
                                 trySpreadMycelium(world, mutablePos.toImmutable());
                                 break; // Found mycelium, try to spread it
                             } else if (!checkState.isAir() && checkState.isOpaque()) {
@@ -100,14 +103,14 @@ public class MyceliumSpreadHandler {
 
     private static void trySpreadMycelium(World world, BlockPos pos) {
         BlockState state = world.getBlockState(pos);
+        Identifier sourceId = Registries.BLOCK.getId(state.getBlock());
 
-        // Check if this is a mycelium layer block
-        if (!Registries.BLOCK.getId(state.getBlock()).equals(MYCELIUM_LAYER_ID)) {
-            return;
-        }
+        boolean isCRMycelium = sourceId.equals(MYCELIUM_LAYER_ID);
+        boolean isVLPMycelium = sourceId.equals(VLP_MYCELIUM_LAYER_ID);
 
-        // Mycelium can spread in any light level (unlike grass)
-        // Try to spread to neighboring blocks
+        if (!isCRMycelium && !isVLPMycelium) return;
+
+        // Mycelium spreads regardless of light level (unlike grass)
         for (int i = 0; i < 4; i++) {
             BlockPos targetPos = pos.add(
                 RANDOM.nextInt(3) - 1,
@@ -116,21 +119,13 @@ public class MyceliumSpreadHandler {
             );
 
             BlockState targetState = world.getBlockState(targetPos);
+            Identifier targetId = Registries.BLOCK.getId(targetState.getBlock());
 
-            // Check if target is loamy dirt slab
-            if (Registries.BLOCK.getId(targetState.getBlock()).equals(LOAMY_DIRT_SLAB_ID)) {
-                // Mycelium spreads regardless of light level
-                // Get the mycelium layer block to spread
-                BlockState myceliumLayerState = Registries.BLOCK.get(MYCELIUM_LAYER_ID).getDefaultState();
-
-                // Copy properties from the dirt slab to maintain rotation, waterlogging, etc.
-                myceliumLayerState = copyProperties(targetState, myceliumLayerState);
-
-                world.setBlockState(targetPos, myceliumLayerState, 3);
-            }
-            // Also check if target is vanilla dirt block
-            else if (Registries.BLOCK.getId(targetState.getBlock()).toString().equals("minecraft:dirt")) {
-                // Mycelium spreads to dirt regardless of light level (just like vanilla mycelium)
+            if (targetId.equals(LOAMY_DIRT_SLAB_ID) && isCRMycelium) {
+                world.setBlockState(targetPos, copyProperties(targetState, Registries.BLOCK.get(MYCELIUM_LAYER_ID).getDefaultState()), 3);
+            } else if (targetId.equals(VLP_DIRT_LAYER_ID) && isVLPMycelium) {
+                world.setBlockState(targetPos, copyProperties(targetState, Registries.BLOCK.get(VLP_MYCELIUM_LAYER_ID).getDefaultState()), 3);
+            } else if (targetId.toString().equals("minecraft:dirt")) {
                 world.setBlockState(targetPos, Blocks.MYCELIUM.getDefaultState(), 3);
             }
         }

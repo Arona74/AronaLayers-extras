@@ -1,4 +1,4 @@
-package io.arona74.crlayersextras;
+package io.arona74.aronalayersextras;
 
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
@@ -16,7 +16,7 @@ public class ModMenuIntegration implements ModMenuApi {
 
             ConfigBuilder builder = ConfigBuilder.create()
                     .setParentScreen(parent)
-                    .setTitle(Text.literal("CRLayers Extras Config"));
+                    .setTitle(Text.literal("Arona Layers Extras Config"));
 
             ConfigEntryBuilder entryBuilder = builder.entryBuilder();
             ConfigCategory general = builder.getOrCreateCategory(Text.literal("General"));

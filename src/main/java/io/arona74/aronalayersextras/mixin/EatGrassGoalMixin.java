@@ -1,6 +1,6 @@
-package io.arona74.crlayersextras.mixin;
+package io.arona74.aronalayersextras.mixin;
 
-import io.arona74.crlayersextras.SheepGrassEatingHandler;
+import io.arona74.aronalayersextras.SheepGrassEatingHandler;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.ai.goal.EatGrassGoal;
 import net.minecraft.entity.mob.MobEntity;
@@ -15,13 +15,15 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import io.arona74.crlayersextras.ModConfig;
+import io.arona74.aronalayersextras.ModConfig;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(EatGrassGoal.class)
 public class EatGrassGoalMixin {
     private static final Identifier GRASS_LAYER_ID = new Identifier("conquest", "grass_block_layer");
     private static final Identifier LOAMY_DIRT_SLAB_ID = new Identifier("conquest", "loamy_dirt_slab");
+    private static final Identifier VLP_GRASS_LAYER_ID = new Identifier("vanillalayerplus", "grass_layer");
+    private static final Identifier VLP_DIRT_LAYER_ID = new Identifier("vanillalayerplus", "dirt_layer");
 
     @Shadow
     @Final
@@ -45,9 +47,9 @@ public class EatGrassGoalMixin {
         BlockPos pos = this.mob.getBlockPos();
         BlockState state = this.world.getBlockState(pos);
 
-        // Only handle if grass_block_layer is present
-        if (!Registries.BLOCK.getId(state.getBlock()).equals(GRASS_LAYER_ID)) {
-            // Not grass_block_layer, let vanilla handle it
+        // Only handle if a modded grass layer is present
+        Identifier blockId = Registries.BLOCK.getId(state.getBlock());
+        if (!blockId.equals(GRASS_LAYER_ID) && !blockId.equals(VLP_GRASS_LAYER_ID)) {
             return;
         }
 
@@ -72,19 +74,16 @@ public class EatGrassGoalMixin {
             BlockPos pos = this.mob.getBlockPos();
             BlockState state = this.world.getBlockState(pos);
 
-            // Check if standing on grass_block_layer
-            if (Registries.BLOCK.getId(state.getBlock()).equals(GRASS_LAYER_ID)) {
+            Identifier blockId = Registries.BLOCK.getId(state.getBlock());
+            boolean isCRGrass = blockId.equals(GRASS_LAYER_ID);
+            boolean isVLPGrass = blockId.equals(VLP_GRASS_LAYER_ID);
+
+            if (isCRGrass || isVLPGrass) {
                 if (this.world.getGameRules().getBoolean(GameRules.DO_MOB_GRIEFING)) {
-                    // Convert grass_block_layer to loamy_dirt_slab
-                    BlockState dirtSlabState = Registries.BLOCK.get(LOAMY_DIRT_SLAB_ID).getDefaultState();
-
-                    // Copy properties to maintain orientation
-                    dirtSlabState = SheepGrassEatingHandler.copyPropertiesPublic(state, dirtSlabState);
-
-                    this.world.setBlockState(pos, dirtSlabState, 2);
+                    Identifier dirtId = isCRGrass ? LOAMY_DIRT_SLAB_ID : VLP_DIRT_LAYER_ID;
+                    BlockState dirtState = SheepGrassEatingHandler.copyPropertiesPublic(state, Registries.BLOCK.get(dirtId).getDefaultState());
+                    this.world.setBlockState(pos, dirtState, 2);
                 }
-
-                // Call the mob's onEatingGrass to regrow wool
                 this.mob.onEatingGrass();
             }
         }

@@ -1,4 +1,4 @@
-package io.arona74.crlayersextras;
+package io.arona74.aronalayersextras;
 
 import net.minecraft.entity.passive.SheepEntity;
 import net.minecraft.block.BlockState;
@@ -10,10 +10,12 @@ import net.minecraft.world.World;
 public class SheepGrassEatingHandler {
     private static final Identifier GRASS_LAYER_ID = new Identifier("conquest", "grass_block_layer");
     private static final Identifier LOAMY_DIRT_SLAB_ID = new Identifier("conquest", "loamy_dirt_slab");
+    private static final Identifier VLP_GRASS_LAYER_ID = new Identifier("vanillalayerplus", "grass_layer");
+    private static final Identifier VLP_DIRT_LAYER_ID = new Identifier("vanillalayerplus", "dirt_layer");
 
     public static void register() {
         // We'll use a mixin instead for better integration
-        CRLayersExtras.LOGGER.info("Registered sheep grass eating handler");
+        AronaLayersExtras.LOGGER.info("Registered sheep grass eating handler");
     }
 
     @SuppressWarnings("unchecked")
@@ -46,14 +48,14 @@ public class SheepGrassEatingHandler {
         // Check the block at sheep's position
         BlockState state = world.getBlockState(pos);
 
-        if (Registries.BLOCK.getId(state.getBlock()).equals(GRASS_LAYER_ID)) {
-            // Convert grass layer to loamy dirt slab
-            BlockState dirtSlabState = Registries.BLOCK.get(LOAMY_DIRT_SLAB_ID).getDefaultState();
+        Identifier blockId = Registries.BLOCK.getId(state.getBlock());
 
-            // Copy properties from grass layer to maintain rotation, waterlogging, etc.
-            dirtSlabState = copyProperties(state, dirtSlabState);
-
-            world.setBlockState(pos, dirtSlabState, 2);
+        if (blockId.equals(GRASS_LAYER_ID)) {
+            world.setBlockState(pos, copyProperties(state, Registries.BLOCK.get(LOAMY_DIRT_SLAB_ID).getDefaultState()), 2);
+            return true;
+        }
+        if (blockId.equals(VLP_GRASS_LAYER_ID)) {
+            world.setBlockState(pos, copyProperties(state, Registries.BLOCK.get(VLP_DIRT_LAYER_ID).getDefaultState()), 2);
             return true;
         }
 

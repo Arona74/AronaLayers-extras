@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "id": "crlayers-extras",
+  "id": "aronalayersextras",
   "version": "${version}",
-  "name": "CRLayers Extras",
-  "description": "Makes Conquest Reforged layer blocks behave like their vanilla counterparts",
+  "name": "Arona Layers Extras",
+  "description": "Makes Conquest Reforged and VanillaLayer+ layer blocks behave like their vanilla counterparts",
   "authors": [
     "arona74"
   ],
@@ -11,21 +11,21 @@
     "sources": "https://github.com/arona74/CRLayers-extras"
   },
   "license": "MIT",
-  "icon": "assets/crlayers-extras/icon.png",
+  "icon": "assets/aronalayersextras/icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [
-      "io.arona74.crlayersextras.CRLayersExtras"
+      "io.arona74.aronalayersextras.AronaLayersExtras"
     ],
     "client": [
-      "io.arona74.crlayersextras.client.CRLayersExtrasClient"
+      "io.arona74.aronalayersextras.client.AronaLayersExtrasClient"
     ],
     "modmenu": [
-      "io.arona74.crlayersextras.ModMenuIntegration"
+      "io.arona74.aronalayersextras.ModMenuIntegration"
     ]
   },
   "mixins": [
-    "crlayers-extras.mixins.json"
+    "aronalayersextras.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.15.0",

@@ -1,6 +1,6 @@
-package io.arona74.crlayersextras.mixin;
+package io.arona74.aronalayersextras.mixin;
 
-import io.arona74.crlayersextras.ModConfig;
+import io.arona74.aronalayersextras.ModConfig;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.SpreadableBlock;

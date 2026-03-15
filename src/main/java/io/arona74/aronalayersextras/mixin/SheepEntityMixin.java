@@ -1,7 +1,7 @@
-package io.arona74.crlayersextras.mixin;
+package io.arona74.aronalayersextras.mixin;
 
-import io.arona74.crlayersextras.ModConfig;
-import io.arona74.crlayersextras.SheepGrassEatingHandler;
+import io.arona74.aronalayersextras.ModConfig;
+import io.arona74.aronalayersextras.SheepGrassEatingHandler;
 import net.minecraft.entity.passive.SheepEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

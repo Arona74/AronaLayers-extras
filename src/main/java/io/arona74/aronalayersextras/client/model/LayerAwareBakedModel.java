@@ -1,6 +1,6 @@
-package io.arona74.crlayersextras.client.model;
+package io.arona74.aronalayersextras.client.model;
 
-import io.arona74.crlayersextras.ModConfig;
+import io.arona74.aronalayersextras.ModConfig;
 import net.fabricmc.fabric.api.renderer.v1.render.RenderContext;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.enums.DoubleBlockHalf;

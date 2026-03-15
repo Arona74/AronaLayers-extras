@@ -1,10 +1,10 @@
-package io.arona74.crlayersextras.client;
+package io.arona74.aronalayersextras.client;
 
-import io.arona74.crlayersextras.client.model.PlantLayerModelPlugin;
+import io.arona74.aronalayersextras.client.model.PlantLayerModelPlugin;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 
-public class CRLayersExtrasClient implements ClientModInitializer {
+public class AronaLayersExtrasClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
