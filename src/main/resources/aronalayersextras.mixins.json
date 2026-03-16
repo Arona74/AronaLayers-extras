@@ -8,7 +8,9 @@
     "EatGrassGoalMixin",
     "SpreadableBlockMixin",
     "FallingBlockMixin",
-    "compat.MushroomVanillaMixin"
+    "compat.MushroomVanillaMixin",
+    "compat.BlockStateUpdateShapeMixin",
+    "compat.StateWithMixin"
   ],
   "client": [
   ],
