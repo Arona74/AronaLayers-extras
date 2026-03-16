@@ -50,7 +50,12 @@ public class LayerAwareBakedModel implements BakedModel {
         // which is what matters for plant placement. Some modded layer blocks (e.g.
         // VanillaLayer+) leave getOutlineShape at the default full cube while
         // overriding getCollisionShape for their actual layer height.
+        // Fall back to outline shape when collision shape is empty — vanilla snow at
+        // layers=1 has no collision shape but does have a visible 2px outline shape.
         var shape = state.getCollisionShape(blockView, pos);
+        if (shape.isEmpty()) {
+            shape = state.getOutlineShape(blockView, pos);
+        }
         if (shape.isEmpty()) return 0f;
         double topY = shape.getMax(Direction.Axis.Y);
         if (!Double.isFinite(topY) || topY <= 0.0 || topY >= 1.0) return 0f;
