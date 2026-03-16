@@ -46,7 +46,11 @@ public class LayerAwareBakedModel implements BakedModel {
     }
 
     private float yOffsetFor(BlockState state, BlockRenderView blockView, BlockPos pos) {
-        var shape = state.getOutlineShape(blockView, pos);
+        // Prefer collision shape: it defines the actual surface entities stand on,
+        // which is what matters for plant placement. Some modded layer blocks (e.g.
+        // VanillaLayer+) leave getOutlineShape at the default full cube while
+        // overriding getCollisionShape for their actual layer height.
+        var shape = state.getCollisionShape(blockView, pos);
         if (shape.isEmpty()) return 0f;
         double topY = shape.getMax(Direction.Axis.Y);
         if (!Double.isFinite(topY) || topY <= 0.0 || topY >= 1.0) return 0f;
