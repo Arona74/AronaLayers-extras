@@ -1,5 +1,6 @@
 package io.arona74.aronalayersextras;
 
+import io.arona74.aronalayersextras.Compat;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -13,10 +14,10 @@ import net.minecraft.world.chunk.WorldChunk;
 import java.util.Random;
 
 public class GrassSpreadHandler {
-    private static final Identifier GRASS_LAYER_ID = new Identifier("conquest", "grass_block_layer");
-    private static final Identifier LOAMY_DIRT_SLAB_ID = new Identifier("conquest", "loamy_dirt_slab");
-    private static final Identifier VLP_GRASS_LAYER_ID = new Identifier("vanillalayerplus", "grass_layer");
-    private static final Identifier VLP_DIRT_LAYER_ID = new Identifier("vanillalayerplus", "dirt_layer");
+    private static final Identifier GRASS_LAYER_ID = Compat.id("conquest", "grass_block_layer");
+    private static final Identifier LOAMY_DIRT_SLAB_ID = Compat.id("conquest", "loamy_dirt_slab");
+    private static final Identifier VLP_GRASS_LAYER_ID = Compat.id("vanillalayerplus", "grass_layer");
+    private static final Identifier VLP_DIRT_LAYER_ID = Compat.id("vanillalayerplus", "dirt_layer");
 
     private static final Random RANDOM = new Random();
 

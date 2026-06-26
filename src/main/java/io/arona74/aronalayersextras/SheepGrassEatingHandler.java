@@ -1,5 +1,6 @@
 package io.arona74.aronalayersextras;
 
+import io.arona74.aronalayersextras.Compat;
 import net.minecraft.entity.passive.SheepEntity;
 import net.minecraft.block.BlockState;
 import net.minecraft.registry.Registries;
@@ -8,10 +9,10 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 public class SheepGrassEatingHandler {
-    private static final Identifier GRASS_LAYER_ID = new Identifier("conquest", "grass_block_layer");
-    private static final Identifier LOAMY_DIRT_SLAB_ID = new Identifier("conquest", "loamy_dirt_slab");
-    private static final Identifier VLP_GRASS_LAYER_ID = new Identifier("vanillalayerplus", "grass_layer");
-    private static final Identifier VLP_DIRT_LAYER_ID = new Identifier("vanillalayerplus", "dirt_layer");
+    private static final Identifier GRASS_LAYER_ID = Compat.id("conquest", "grass_block_layer");
+    private static final Identifier LOAMY_DIRT_SLAB_ID = Compat.id("conquest", "loamy_dirt_slab");
+    private static final Identifier VLP_GRASS_LAYER_ID = Compat.id("vanillalayerplus", "grass_layer");
+    private static final Identifier VLP_DIRT_LAYER_ID = Compat.id("vanillalayerplus", "dirt_layer");
 
     public static void register() {
         // We'll use a mixin instead for better integration

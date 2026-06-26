@@ -1,5 +1,6 @@
 package io.arona74.aronalayersextras.mixin;
 
+import io.arona74.aronalayersextras.Compat;
 import io.arona74.aronalayersextras.SheepGrassEatingHandler;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.ai.goal.EatGrassGoal;
@@ -20,10 +21,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(EatGrassGoal.class)
 public class EatGrassGoalMixin {
-    private static final Identifier GRASS_LAYER_ID = new Identifier("conquest", "grass_block_layer");
-    private static final Identifier LOAMY_DIRT_SLAB_ID = new Identifier("conquest", "loamy_dirt_slab");
-    private static final Identifier VLP_GRASS_LAYER_ID = new Identifier("vanillalayerplus", "grass_layer");
-    private static final Identifier VLP_DIRT_LAYER_ID = new Identifier("vanillalayerplus", "dirt_layer");
+    private static final Identifier GRASS_LAYER_ID = Compat.id("conquest", "grass_block_layer");
+    private static final Identifier LOAMY_DIRT_SLAB_ID = Compat.id("conquest", "loamy_dirt_slab");
+    private static final Identifier VLP_GRASS_LAYER_ID = Compat.id("vanillalayerplus", "grass_layer");
+    private static final Identifier VLP_DIRT_LAYER_ID = Compat.id("vanillalayerplus", "dirt_layer");
 
     @Shadow
     @Final

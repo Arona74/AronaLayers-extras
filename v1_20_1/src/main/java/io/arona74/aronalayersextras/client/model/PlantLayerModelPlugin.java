@@ -1,5 +1,6 @@
 package io.arona74.aronalayersextras.client.model;
 
+import io.arona74.aronalayersextras.Compat;
 import io.arona74.aronalayersextras.ModConfig;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import net.minecraft.client.util.ModelIdentifier;
@@ -8,7 +9,6 @@ import java.util.Set;
 
 public class PlantLayerModelPlugin implements ModelLoadingPlugin {
 
-    // Vanilla plant block names that should receive the Y-offset treatment
     private static final Set<String> TARGET_PLANTS = Set.of(
             "grass", "tall_grass", "fern", "large_fern", "dead_bush",
             "dandelion", "poppy", "blue_orchid", "allium", "azure_bluet",
@@ -24,20 +24,17 @@ public class PlantLayerModelPlugin implements ModelLoadingPlugin {
 
     @Override
     public void onInitializeModelLoader(Context ctx) {
-        // Snapshot the additional blocks list at model-load time
         Set<String> additional = Set.copyOf(ModConfig.getInstance().AdditionalOffsetBlocks);
 
         ctx.modifyModelAfterBake().register((original, context) -> {
             if (original == null) return null;
             if (context.id() instanceof ModelIdentifier id) {
-                // Vanilla plants — only if VanillaBlockOffset is enabled
                 if (ModConfig.getInstance().VanillaBlockOffset
-                        && "minecraft".equals(id.getNamespace())
-                        && TARGET_PLANTS.contains(id.getPath())) {
+                        && "minecraft".equals(Compat.modelIdNamespace(id))
+                        && TARGET_PLANTS.contains(Compat.modelIdPath(id))) {
                     return new LayerAwareBakedModel(original);
                 }
-                // Extra blocks from config (e.g. conquest:seagrass)
-                if (additional.contains(id.getNamespace() + ":" + id.getPath())) {
+                if (additional.contains(Compat.modelIdNamespace(id) + ":" + Compat.modelIdPath(id))) {
                     return new LayerAwareBakedModel(original);
                 }
             }

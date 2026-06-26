@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "id": "aronalayersextras",
+  "version": "${version}",
+  "name": "Arona Layers Extras",
+  "description": "Makes Conquest Reforged and VanillaLayer+ layer blocks behave like their vanilla counterparts",
+  "authors": [
+    "arona74"
+  ],
+  "contact": {
+    "sources": "https://github.com/arona74/CRLayers-extras"
+  },
+  "license": "MIT",
+  "icon": "assets/aronalayersextras/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "io.arona74.aronalayersextras.AronaLayersExtras"
+    ],
+    "client": [
+      "io.arona74.aronalayersextras.client.AronaLayersExtrasClient"
+    ],
+    "modmenu": [
+      "io.arona74.aronalayersextras.ModMenuIntegration"
+    ]
+  },
+  "mixins": [
+    "aronalayersextras.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "fabric-api": "*",
+    "minecraft": "~1.21.1",
+    "java": ">=21",
+    "indium": "*"
+  },
+  "suggests": {
+    "conquestre": "*",
+    "modmenu": "*",
+    "cloth-config2": "*"
+  }
+}
