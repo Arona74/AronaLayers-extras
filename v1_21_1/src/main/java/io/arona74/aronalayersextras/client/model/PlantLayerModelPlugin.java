@@ -3,7 +3,7 @@ package io.arona74.aronalayersextras.client.model;
 import io.arona74.aronalayersextras.Compat;
 import io.arona74.aronalayersextras.ModConfig;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
-import net.minecraft.client.util.ModelIdentifier;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 
 import java.util.Set;
 
@@ -28,7 +28,7 @@ public class PlantLayerModelPlugin implements ModelLoadingPlugin {
 
         ctx.modifyModelAfterBake().register((original, context) -> {
             if (original == null) return null;
-            ModelIdentifier topId = context.topLevelId();
+            ModelResourceLocation topId = context.topLevelId();
             if (topId != null) {
                 if (ModConfig.getInstance().VanillaBlockOffset
                         && "minecraft".equals(Compat.modelIdNamespace(topId))

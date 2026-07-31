@@ -2,22 +2,22 @@ package io.arona74.aronalayersextras;
 
 import io.arona74.aronalayersextras.Compat;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.registry.Registries;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.WorldChunk;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.chunk.LevelChunk;
 
 import java.util.Random;
 
 public class GrassSpreadHandler {
-    private static final Identifier GRASS_LAYER_ID = Compat.id("conquest", "grass_block_layer");
-    private static final Identifier LOAMY_DIRT_SLAB_ID = Compat.id("conquest", "loamy_dirt_slab");
-    private static final Identifier VLP_GRASS_LAYER_ID = Compat.id("vanillalayerplus", "grass_layer");
-    private static final Identifier VLP_DIRT_LAYER_ID = Compat.id("vanillalayerplus", "dirt_layer");
+    private static final ResourceLocation GRASS_LAYER_ID = Compat.id("conquest", "grass_block_layer");
+    private static final ResourceLocation LOAMY_DIRT_SLAB_ID = Compat.id("conquest", "loamy_dirt_slab");
+    private static final ResourceLocation VLP_GRASS_LAYER_ID = Compat.id("vanillalayerplus", "grass_layer");
+    private static final ResourceLocation VLP_DIRT_LAYER_ID = Compat.id("vanillalayerplus", "dirt_layer");
 
     private static final Random RANDOM = new Random();
 
@@ -26,19 +26,19 @@ public class GrassSpreadHandler {
         AronaLayersExtras.LOGGER.info("Registered grass spreading handler");
     }
 
-    private static void onWorldTick(ServerWorld world) {
+    private static void onWorldTick(ServerLevel world) {
         if (!ModConfig.getInstance().enableGrassSpreading) return;
 
         // Get the randomTickSpeed value (default is 3)
-        int randomTickSpeed = world.getGameRules().getInt(net.minecraft.world.GameRules.RANDOM_TICK_SPEED);
+        int randomTickSpeed = world.getGameRules().getInt(net.minecraft.world.level.GameRules.RULE_RANDOMTICKING);
 
         if (randomTickSpeed <= 0) {
             return;
         }
 
         // Process chunks around players - much more aggressively than before
-        world.getPlayers().forEach(player -> {
-            BlockPos playerPos = player.getBlockPos();
+        world.players().forEach(player -> {
+            BlockPos playerPos = player.blockPosition();
             int chunkX = playerPos.getX() >> 4;
             int chunkZ = playerPos.getZ() >> 4;
 
@@ -47,7 +47,7 @@ public class GrassSpreadHandler {
 
             for (int dx = -chunkRadius; dx <= chunkRadius; dx++) {
                 for (int dz = -chunkRadius; dz <= chunkRadius; dz++) {
-                    WorldChunk chunk = world.getChunk(chunkX + dx, chunkZ + dz);
+                    LevelChunk chunk = world.getChunk(chunkX + dx, chunkZ + dz);
 
                     // Reduce tick rate to match vanilla spreading speed
                     // We're more efficient due to smart Y scanning, so we need fewer ticks
@@ -59,26 +59,26 @@ public class GrassSpreadHandler {
                             continue;
                         }
 
-                        int x = chunk.getPos().getStartX() + RANDOM.nextInt(16);
-                        int z = chunk.getPos().getStartZ() + RANDOM.nextInt(16);
+                        int x = chunk.getPos().getMinBlockX() + RANDOM.nextInt(16);
+                        int z = chunk.getPos().getMinBlockZ() + RANDOM.nextInt(16);
 
                         // Smart Y selection: focus on surface blocks where grass is more likely
                         // Check from top down to find the highest solid block
-                        int y = world.getTopY();
-                        BlockPos.Mutable mutablePos = new BlockPos.Mutable(x, y, z);
+                        int y = world.getMaxBuildHeight();
+                        BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos(x, y, z);
 
                         // Scan down to find surface (where grass would be)
-                        for (int checkY = world.getTopY() - 1; checkY > world.getBottomY(); checkY--) {
+                        for (int checkY = world.getMaxBuildHeight() - 1; checkY > world.getMinBuildHeight(); checkY--) {
                             mutablePos.setY(checkY);
                             BlockState checkState = world.getBlockState(mutablePos);
 
-                            Identifier checkId = Registries.BLOCK.getId(checkState.getBlock());
+                            ResourceLocation checkId = BuiltInRegistries.BLOCK.getKey(checkState.getBlock());
                             if (checkId.equals(GRASS_LAYER_ID)
                                     || checkId.equals(VLP_GRASS_LAYER_ID)
-                                    || checkState.isOf(Blocks.GRASS_BLOCK)) {
-                                trySpreadGrass(world, mutablePos.toImmutable());
+                                    || checkState.is(Blocks.GRASS_BLOCK)) {
+                                trySpreadGrass(world, mutablePos.immutable());
                                 break; // Found grass, try to spread it
-                            } else if (!checkState.isAir() && checkState.isOpaque()) {
+                            } else if (!checkState.isAir() && checkState.canOcclude()) {
                                 // Hit a non-grass solid block, stop searching this column
                                 break;
                             }
@@ -93,9 +93,9 @@ public class GrassSpreadHandler {
     private static <T extends Comparable<T>> BlockState copyProperties(BlockState source, BlockState target) {
         try {
             for (var property : source.getProperties()) {
-                if (target.contains(property)) {
-                    target = target.with((net.minecraft.state.property.Property<T>) property,
-                                        (T) source.get(property));
+                if (target.hasProperty(property)) {
+                    target = target.setValue((net.minecraft.world.level.block.state.properties.Property<T>) property,
+                                        (T) source.getValue(property));
                 }
             }
         } catch (Exception e) {
@@ -104,42 +104,42 @@ public class GrassSpreadHandler {
         return target;
     }
 
-    private static void trySpreadGrass(World world, BlockPos pos) {
+    private static void trySpreadGrass(Level world, BlockPos pos) {
         BlockState state = world.getBlockState(pos);
-        Identifier sourceId = Registries.BLOCK.getId(state.getBlock());
+        ResourceLocation sourceId = BuiltInRegistries.BLOCK.getKey(state.getBlock());
 
         boolean isCRGrass = sourceId.equals(GRASS_LAYER_ID);
         boolean isVLPGrass = sourceId.equals(VLP_GRASS_LAYER_ID);
-        boolean isVanillaGrass = state.isOf(Blocks.GRASS_BLOCK);
+        boolean isVanillaGrass = state.is(Blocks.GRASS_BLOCK);
 
         if (!isCRGrass && !isVLPGrass && !isVanillaGrass) return;
 
         // Check if there's enough light (same as vanilla grass)
-        if (world.getLightLevel(pos.up()) < 9) return;
+        if (world.getMaxLocalRawBrightness(pos.above()) < 9) return;
 
         // Try to spread to neighboring blocks
         for (int i = 0; i < 4; i++) {
-            BlockPos targetPos = pos.add(
+            BlockPos targetPos = pos.offset(
                 RANDOM.nextInt(3) - 1,
                 RANDOM.nextInt(5) - 3,
                 RANDOM.nextInt(3) - 1
             );
 
             BlockState targetState = world.getBlockState(targetPos);
-            Identifier targetId = Registries.BLOCK.getId(targetState.getBlock());
+            ResourceLocation targetId = BuiltInRegistries.BLOCK.getKey(targetState.getBlock());
 
-            if (world.getLightLevel(targetPos.up()) < 9) continue;
+            if (world.getMaxLocalRawBrightness(targetPos.above()) < 9) continue;
 
             if (targetId.equals(LOAMY_DIRT_SLAB_ID) && (isCRGrass || isVanillaGrass)) {
-                BlockState grassLayerState = copyProperties(targetState, Registries.BLOCK.get(GRASS_LAYER_ID).getDefaultState());
-                world.setBlockState(targetPos, grassLayerState, 3);
+                BlockState grassLayerState = copyProperties(targetState, BuiltInRegistries.BLOCK.get(GRASS_LAYER_ID).defaultBlockState());
+                world.setBlock(targetPos, grassLayerState, 3);
             } else if (targetId.equals(VLP_DIRT_LAYER_ID) && (isVLPGrass || isVanillaGrass)) {
-                BlockState grassLayerState = copyProperties(targetState, Registries.BLOCK.get(VLP_GRASS_LAYER_ID).getDefaultState());
-                world.setBlockState(targetPos, grassLayerState, 3);
+                BlockState grassLayerState = copyProperties(targetState, BuiltInRegistries.BLOCK.get(VLP_GRASS_LAYER_ID).defaultBlockState());
+                world.setBlock(targetPos, grassLayerState, 3);
             } else if (targetId.toString().equals("minecraft:dirt")) {
-                BlockState aboveState = world.getBlockState(targetPos.up());
+                BlockState aboveState = world.getBlockState(targetPos.above());
                 if (aboveState.isAir()) {
-                    world.setBlockState(targetPos, Blocks.GRASS_BLOCK.getDefaultState(), 3);
+                    world.setBlock(targetPos, Blocks.GRASS_BLOCK.defaultBlockState(), 3);
                 }
             }
         }

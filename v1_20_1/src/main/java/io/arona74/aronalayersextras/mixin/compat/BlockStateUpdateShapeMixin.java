@@ -1,12 +1,12 @@
 package io.arona74.aronalayersextras.mixin.compat;
 
 import io.arona74.aronalayersextras.AronaLayersExtras;
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.WorldAccess;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.LevelAccessor;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -20,30 +20,30 @@ import org.spongepowered.asm.mixin.injection.Redirect;
  * throwing IllegalArgumentException.
  *
  * Rather than injecting into the CR class directly (which is fragile with @Pseudo),
- * we intercept the dispatch in vanilla's AbstractBlock.AbstractBlockState.getStateForNeighborUpdate
+ * we intercept the dispatch in vanilla's BlockBehaviour.BlockStateBase.getStateForNeighborUpdate
  * (method_26191), which is the BlockState-level wrapper that delegates to the Block's
  * getStateForNeighborUpdate on all blocks.
  */
-@Mixin(AbstractBlock.AbstractBlockState.class)
+@Mixin(BlockBehaviour.BlockStateBase.class)
 public abstract class BlockStateUpdateShapeMixin {
 
     @Redirect(
-            method = "getStateForNeighborUpdate",
+            method = "updateShape",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/block/AbstractBlock;getStateForNeighborUpdate(Lnet/minecraft/block/BlockState;Lnet/minecraft/util/math/Direction;Lnet/minecraft/block/BlockState;Lnet/minecraft/world/WorldAccess;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/block/BlockState;"
+                    target = "Lnet/minecraft/world/level/block/state/BlockBehaviour;updateShape(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/Direction;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/LevelAccessor;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;"
             )
     )
     private BlockState safeGetStateForNeighborUpdate(
-            AbstractBlock block, BlockState state, Direction direction,
-            BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos) {
+            BlockBehaviour block, BlockState state, Direction direction,
+            BlockState neighborState, LevelAccessor world, BlockPos pos, BlockPos neighborPos) {
         try {
-            return block.getStateForNeighborUpdate(state, direction, neighborState, world, pos, neighborPos);
+            return block.updateShape(state, direction, neighborState, world, pos, neighborPos);
         } catch (IllegalArgumentException e) {
             AronaLayersExtras.LOGGER.debug(
                     "[AronaLayersExtras] Caught IAE in {}.getStateForNeighborUpdate, returning AIR: {}",
                     block.getClass().getSimpleName(), e.getMessage());
-            return Blocks.AIR.getDefaultState();
+            return Blocks.AIR.defaultBlockState();
         }
     }
 }

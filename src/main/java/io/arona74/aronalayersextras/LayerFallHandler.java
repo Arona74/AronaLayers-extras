@@ -1,17 +1,17 @@
 package io.arona74.aronalayersextras;
 
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.FallingBlockEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.registry.Registries;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.entity.item.FallingBlockEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
 public class LayerFallHandler {
 
@@ -20,18 +20,18 @@ public class LayerFallHandler {
         AronaLayersExtras.LOGGER.info("Registered layer fall handler");
     }
 
-    private static void onBlockBroken(World world, PlayerEntity player, BlockPos pos, BlockState state, BlockEntity blockEntity) {
+    private static void onBlockBroken(Level world, Player player, BlockPos pos, BlockState state, BlockEntity blockEntity) {
         if (!ModConfig.getInstance().enableLayersFallWithSand) return;
-        if (!(world instanceof ServerWorld)) return;
-        if (!state.isOf(Blocks.SAND) && !state.isOf(Blocks.RED_SAND) && !state.isOf(Blocks.GRAVEL)) return;
+        if (!(world instanceof ServerLevel)) return;
+        if (!state.is(Blocks.SAND) && !state.is(Blocks.RED_SAND) && !state.is(Blocks.GRAVEL)) return;
 
-        BlockPos checkPos = pos.up();
+        BlockPos checkPos = pos.above();
         for (int i = 0; i < 32; i++) {
             BlockState above = world.getBlockState(checkPos);
             if (isConquestLayerBlock(above)) {
-                world.setBlockState(checkPos, above.getFluidState().getBlockState(), Block.NOTIFY_LISTENERS);
-                FallingBlockEntity.spawnFromBlock(world, checkPos, above);
-                checkPos = checkPos.up();
+                world.setBlock(checkPos, above.getFluidState().createLegacyBlock(), Block.UPDATE_CLIENTS);
+                FallingBlockEntity.fall(world, checkPos, above);
+                checkPos = checkPos.above();
             } else {
                 break;
             }
@@ -39,7 +39,7 @@ public class LayerFallHandler {
     }
 
     public static boolean isConquestLayerBlock(BlockState state) {
-        Identifier id = Registries.BLOCK.getId(state.getBlock());
+        ResourceLocation id = BuiltInRegistries.BLOCK.getKey(state.getBlock());
         String ns = id.getNamespace();
         String path = id.getPath();
         if ("conquest".equals(ns)) {

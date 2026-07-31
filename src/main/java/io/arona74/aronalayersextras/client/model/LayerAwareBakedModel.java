@@ -2,19 +2,19 @@ package io.arona74.aronalayersextras.client.model;
 
 import io.arona74.aronalayersextras.ModConfig;
 import net.fabricmc.fabric.api.renderer.v1.render.RenderContext;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.enums.DoubleBlockHalf;
-import net.minecraft.client.render.model.BakedModel;
-import net.minecraft.client.render.model.BakedQuad;
-import net.minecraft.client.render.model.json.ModelOverrideList;
-import net.minecraft.client.render.model.json.ModelTransformation;
-import net.minecraft.client.texture.Sprite;
-import net.minecraft.item.ItemStack;
-import net.minecraft.state.property.Properties;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.world.BlockRenderView;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.ItemOverrides;
+import net.minecraft.client.renderer.block.model.ItemTransforms;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.BlockAndTintGetter;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -27,25 +27,25 @@ public class LayerAwareBakedModel implements BakedModel {
         this.wrapped = wrapped;
     }
 
-    private float computeOffset(BlockRenderView blockView, BlockPos pos) {
+    private float computeOffset(BlockAndTintGetter blockView, BlockPos pos) {
         if (!ModConfig.getInstance().enableBlockOffset) return 0f;
 
-        BlockState below = blockView.getBlockState(pos.down());
-        float offset = yOffsetFor(below, blockView, pos.down());
+        BlockState below = blockView.getBlockState(pos.below());
+        float offset = yOffsetFor(below, blockView, pos.below());
         if (offset != 0f) return offset;
 
         // Upper half of a 2-block-tall plant: check two blocks down
-        if (below.contains(Properties.DOUBLE_BLOCK_HALF)
-                && below.get(Properties.DOUBLE_BLOCK_HALF) == DoubleBlockHalf.LOWER) {
-            BlockState belowBelow = blockView.getBlockState(pos.down().down());
-            offset = yOffsetFor(belowBelow, blockView, pos.down().down());
+        if (below.hasProperty(BlockStateProperties.DOUBLE_BLOCK_HALF)
+                && below.getValue(BlockStateProperties.DOUBLE_BLOCK_HALF) == DoubleBlockHalf.LOWER) {
+            BlockState belowBelow = blockView.getBlockState(pos.below().below());
+            offset = yOffsetFor(belowBelow, blockView, pos.below().below());
             if (offset != 0f) return offset;
         }
 
         return 0f;
     }
 
-    private float yOffsetFor(BlockState state, BlockRenderView blockView, BlockPos pos) {
+    private float yOffsetFor(BlockState state, BlockAndTintGetter blockView, BlockPos pos) {
         // Prefer collision shape: it defines the actual surface entities stand on,
         // which is what matters for plant placement. Some modded layer blocks (e.g.
         // VanillaLayer+) leave getOutlineShape at the default full cube while
@@ -54,10 +54,10 @@ public class LayerAwareBakedModel implements BakedModel {
         // layers=1 has no collision shape but does have a visible 2px outline shape.
         var shape = state.getCollisionShape(blockView, pos);
         if (shape.isEmpty()) {
-            shape = state.getOutlineShape(blockView, pos);
+            shape = state.getShape(blockView, pos);
         }
         if (shape.isEmpty()) return 0f;
-        double topY = shape.getMax(Direction.Axis.Y);
+        double topY = shape.max(Direction.Axis.Y);
         if (!Double.isFinite(topY) || topY <= 0.0 || topY >= 1.0) return 0f;
         return -(float) (1.0 - topY);
     }
@@ -68,8 +68,8 @@ public class LayerAwareBakedModel implements BakedModel {
     }
 
     @Override
-    public void emitBlockQuads(BlockRenderView blockView, BlockState state, BlockPos pos,
-                               Supplier<Random> randomSupplier, RenderContext context) {
+    public void emitBlockQuads(BlockAndTintGetter blockView, BlockState state, BlockPos pos,
+                               Supplier<RandomSource> randomSupplier, RenderContext context) {
         float yOffset = computeOffset(blockView, pos);
         if (yOffset != 0f) {
             context.pushTransform(quad -> {
@@ -84,14 +84,14 @@ public class LayerAwareBakedModel implements BakedModel {
     }
 
     @Override
-    public void emitItemQuads(ItemStack stack, Supplier<Random> randomSupplier, RenderContext context) {
+    public void emitItemQuads(ItemStack stack, Supplier<RandomSource> randomSupplier, RenderContext context) {
         wrapped.emitItemQuads(stack, randomSupplier, context);
     }
 
     // Delegate all vanilla BakedModel methods to the wrapped model
 
     @Override
-    public List<BakedQuad> getQuads(BlockState state, Direction face, Random random) {
+    public List<BakedQuad> getQuads(BlockState state, Direction face, RandomSource random) {
         return wrapped.getQuads(state, face, random);
     }
 
@@ -101,32 +101,32 @@ public class LayerAwareBakedModel implements BakedModel {
     }
 
     @Override
-    public boolean hasDepth() {
-        return wrapped.hasDepth();
+    public boolean isGui3d() {
+        return wrapped.isGui3d();
     }
 
     @Override
-    public boolean isSideLit() {
-        return wrapped.isSideLit();
+    public boolean usesBlockLight() {
+        return wrapped.usesBlockLight();
     }
 
     @Override
-    public boolean isBuiltin() {
-        return wrapped.isBuiltin();
+    public boolean isCustomRenderer() {
+        return wrapped.isCustomRenderer();
     }
 
     @Override
-    public Sprite getParticleSprite() {
-        return wrapped.getParticleSprite();
+    public TextureAtlasSprite getParticleIcon() {
+        return wrapped.getParticleIcon();
     }
 
     @Override
-    public ModelTransformation getTransformation() {
-        return wrapped.getTransformation();
+    public ItemTransforms getTransforms() {
+        return wrapped.getTransforms();
     }
 
     @Override
-    public ModelOverrideList getOverrides() {
+    public ItemOverrides getOverrides() {
         return wrapped.getOverrides();
     }
 }

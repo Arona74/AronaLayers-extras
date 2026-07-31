@@ -1,7 +1,7 @@
 package io.arona74.aronalayersextras.mixin.compat;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.state.property.Property;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.Property;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.injection.At;
@@ -28,8 +28,8 @@ public class MushroomVanillaMixin {
      * return the state as-is instead of throwing IAE.
      *
      * Target uses intermediary names because remap = false.
-     * class_2688 = net.minecraft.state.State (base state class, defines with())
-     * class_2748 = net.minecraft.state.property.Property
+     * class_2688 = net.minecraft.world.level.block.state.StateHolder (base state class, defines with())
+     * class_2748 = net.minecraft.world.level.block.state.properties.Property
      */
     @Redirect(
             method = "method_9559",
@@ -40,9 +40,9 @@ public class MushroomVanillaMixin {
             remap = false
     )
     private <T extends Comparable<T>> BlockState safeWith(BlockState state, Property<T> property, T value) {
-        if (!state.contains(property)) {
+        if (!state.hasProperty(property)) {
             return state;
         }
-        return state.with(property, value);
+        return state.setValue(property, value);
     }
 }
