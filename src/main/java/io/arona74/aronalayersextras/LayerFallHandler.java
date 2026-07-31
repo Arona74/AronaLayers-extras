@@ -7,9 +7,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 
@@ -39,9 +37,10 @@ public class LayerFallHandler {
     }
 
     public static boolean isConquestLayerBlock(BlockState state) {
-        ResourceLocation id = BuiltInRegistries.BLOCK.getKey(state.getBlock());
-        String ns = id.getNamespace();
-        String path = id.getPath();
+        String id = Compat.blockId(state.getBlock());
+        int colon = id.indexOf(':');
+        String ns = colon < 0 ? "minecraft" : id.substring(0, colon);
+        String path = colon < 0 ? id : id.substring(colon + 1);
         if ("conquest".equals(ns)) {
             // Exclude mushroom layer blocks: CR's MushroomVanilla has a buggy
             // getStateForNeighborUpdate that crashes when the block is removed.

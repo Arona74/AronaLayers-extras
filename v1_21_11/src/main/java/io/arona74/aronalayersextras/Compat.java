@@ -1,12 +1,11 @@
 package io.arona74.aronalayersextras;
 
-import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelHeightAccessor;
+import net.minecraft.world.level.gamerules.GameRules;
 
 /**
  * Per-version shims.
@@ -27,19 +26,14 @@ public final class Compat {
     /**
      * Block registered under a canonical id, or AIR when nothing is.
      *
-     * Never returns null. Callers dereference the result immediately, and a
-     * null sentinel here type-checks everywhere and only shows up at runtime.
+     * getValue is deliberate. On 1.21.11 Registry#get(Identifier) returns an
+     * Optional, which would push a null or empty sentinel into shared code;
+     * getValue on the defaulted block registry keeps the pre-1.21.11 behaviour
+     * of answering AIR. Callers dereference the result immediately, and a null
+     * sentinel here type-checks everywhere and only shows up at runtime.
      */
     public static Block blockFromId(String id) {
-        return BuiltInRegistries.BLOCK.get(new ResourceLocation(id));
-    }
-
-    public static String modelIdNamespace(ModelResourceLocation id) {
-        return id.getNamespace();
-    }
-
-    public static String modelIdPath(ModelResourceLocation id) {
-        return id.getPath();
+        return BuiltInRegistries.BLOCK.getValue(Identifier.parse(id));
     }
 
     /**
@@ -53,12 +47,12 @@ public final class Compat {
      * top-down scan by one block, so the contract is fixed here instead.
      */
     public static int topYExclusive(LevelHeightAccessor world) {
-        return world.getMaxBuildHeight();
+        return world.getMaxY() + 1;
     }
 
     /** Lowest buildable Y. */
     public static int bottomY(LevelHeightAccessor world) {
-        return world.getMinBuildHeight();
+        return world.getMinY();
     }
 
     public static int randomTickSpeed(Level world) {

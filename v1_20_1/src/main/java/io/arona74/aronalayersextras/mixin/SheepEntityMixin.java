@@ -2,6 +2,7 @@ package io.arona74.aronalayersextras.mixin;
 
 import io.arona74.aronalayersextras.ModConfig;
 import io.arona74.aronalayersextras.SheepGrassEatingHandler;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.animal.Sheep;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -16,6 +17,6 @@ public class SheepEntityMixin {
         if (!ModConfig.getInstance().enableSheepEatingGrassLayers) return;
 
         Sheep sheep = (Sheep) (Object) this;
-        SheepGrassEatingHandler.tryEatGrassLayer(sheep);
+        SheepGrassEatingHandler.tryEatGrassLayer(sheep.level(), sheep.blockPosition());
     }
 }

@@ -5,10 +5,7 @@ import io.arona74.aronalayersextras.SheepGrassEatingHandler;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.entity.ai.goal.EatBlockGoal;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -21,10 +18,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(EatBlockGoal.class)
 public class EatGrassGoalMixin {
-    private static final ResourceLocation GRASS_LAYER_ID = Compat.id("conquest", "grass_block_layer");
-    private static final ResourceLocation LOAMY_DIRT_SLAB_ID = Compat.id("conquest", "loamy_dirt_slab");
-    private static final ResourceLocation VLP_GRASS_LAYER_ID = Compat.id("vanillalayerplus", "grass_layer");
-    private static final ResourceLocation VLP_DIRT_LAYER_ID = Compat.id("vanillalayerplus", "dirt_layer");
+    private static final String GRASS_LAYER_ID = "conquest:grass_block_layer";
+    private static final String LOAMY_DIRT_SLAB_ID = "conquest:loamy_dirt_slab";
+    private static final String VLP_GRASS_LAYER_ID = "vanillalayerplus:grass_layer";
+    private static final String VLP_DIRT_LAYER_ID = "vanillalayerplus:dirt_layer";
 
     @Shadow
     @Final
@@ -49,7 +46,7 @@ public class EatGrassGoalMixin {
         BlockState state = this.level.getBlockState(pos);
 
         // Only handle if a modded grass layer is present
-        ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(state.getBlock());
+        String blockId = Compat.blockId(state.getBlock());
         if (!blockId.equals(GRASS_LAYER_ID) && !blockId.equals(VLP_GRASS_LAYER_ID)) {
             return;
         }
@@ -75,14 +72,14 @@ public class EatGrassGoalMixin {
             BlockPos pos = this.mob.blockPosition();
             BlockState state = this.level.getBlockState(pos);
 
-            ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(state.getBlock());
+            String blockId = Compat.blockId(state.getBlock());
             boolean isCRGrass = blockId.equals(GRASS_LAYER_ID);
             boolean isVLPGrass = blockId.equals(VLP_GRASS_LAYER_ID);
 
             if (isCRGrass || isVLPGrass) {
-                if (this.level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
-                    ResourceLocation dirtId = isCRGrass ? LOAMY_DIRT_SLAB_ID : VLP_DIRT_LAYER_ID;
-                    BlockState dirtState = SheepGrassEatingHandler.copyPropertiesPublic(state, BuiltInRegistries.BLOCK.get(dirtId).defaultBlockState());
+                if (Compat.doMobGriefing(this.level)) {
+                    String dirtId = isCRGrass ? LOAMY_DIRT_SLAB_ID : VLP_DIRT_LAYER_ID;
+                    BlockState dirtState = SheepGrassEatingHandler.copyPropertiesPublic(state, Compat.blockFromId(dirtId).defaultBlockState());
                     this.level.setBlock(pos, dirtState, 2);
                 }
                 this.mob.ate();

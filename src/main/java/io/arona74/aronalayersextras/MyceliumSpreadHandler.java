@@ -4,9 +4,7 @@ import io.arona74.aronalayersextras.Compat;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -14,10 +12,10 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import java.util.Random;
 
 public class MyceliumSpreadHandler {
-    private static final ResourceLocation MYCELIUM_LAYER_ID = Compat.id("conquest", "mycelium_layer");
-    private static final ResourceLocation LOAMY_DIRT_SLAB_ID = Compat.id("conquest", "loamy_dirt_slab");
-    private static final ResourceLocation VLP_MYCELIUM_LAYER_ID = Compat.id("vanillalayerplus", "mycelium_layer");
-    private static final ResourceLocation VLP_DIRT_LAYER_ID = Compat.id("vanillalayerplus", "dirt_layer");
+    private static final String MYCELIUM_LAYER_ID = "conquest:mycelium_layer";
+    private static final String LOAMY_DIRT_SLAB_ID = "conquest:loamy_dirt_slab";
+    private static final String VLP_MYCELIUM_LAYER_ID = "vanillalayerplus:mycelium_layer";
+    private static final String VLP_DIRT_LAYER_ID = "vanillalayerplus:dirt_layer";
 
     private static final Random RANDOM = new Random();
 
@@ -30,7 +28,7 @@ public class MyceliumSpreadHandler {
         if (!ModConfig.getInstance().enableMyceliumSpreading) return;
 
         // Get the randomTickSpeed value (default is 3)
-        int randomTickSpeed = world.getGameRules().getInt(net.minecraft.world.level.GameRules.RULE_RANDOMTICKING);
+        int randomTickSpeed = Compat.randomTickSpeed(world);
 
         if (randomTickSpeed <= 0) {
             return;
@@ -64,15 +62,15 @@ public class MyceliumSpreadHandler {
 
                         // Smart Y selection: focus on surface blocks where mycelium is more likely
                         // Check from top down to find the highest solid block
-                        int y = world.getMaxBuildHeight();
+                        int y = Compat.topYExclusive(world);
                         BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos(x, y, z);
 
                         // Scan down to find surface (where mycelium would be)
-                        for (int checkY = world.getMaxBuildHeight() - 1; checkY > world.getMinBuildHeight(); checkY--) {
+                        for (int checkY = Compat.topYExclusive(world) - 1; checkY > Compat.bottomY(world); checkY--) {
                             mutablePos.setY(checkY);
                             BlockState checkState = world.getBlockState(mutablePos);
 
-                            ResourceLocation checkId = BuiltInRegistries.BLOCK.getKey(checkState.getBlock());
+                            String checkId = Compat.blockId(checkState.getBlock());
                             if (checkId.equals(MYCELIUM_LAYER_ID) || checkId.equals(VLP_MYCELIUM_LAYER_ID)) {
                                 trySpreadMycelium(world, mutablePos.immutable());
                                 break; // Found mycelium, try to spread it
@@ -104,7 +102,7 @@ public class MyceliumSpreadHandler {
 
     private static void trySpreadMycelium(Level world, BlockPos pos) {
         BlockState state = world.getBlockState(pos);
-        ResourceLocation sourceId = BuiltInRegistries.BLOCK.getKey(state.getBlock());
+        String sourceId = Compat.blockId(state.getBlock());
 
         boolean isCRMycelium = sourceId.equals(MYCELIUM_LAYER_ID);
         boolean isVLPMycelium = sourceId.equals(VLP_MYCELIUM_LAYER_ID);
@@ -120,13 +118,13 @@ public class MyceliumSpreadHandler {
             );
 
             BlockState targetState = world.getBlockState(targetPos);
-            ResourceLocation targetId = BuiltInRegistries.BLOCK.getKey(targetState.getBlock());
+            String targetId = Compat.blockId(targetState.getBlock());
 
             if (targetId.equals(LOAMY_DIRT_SLAB_ID) && isCRMycelium) {
-                world.setBlock(targetPos, copyProperties(targetState, BuiltInRegistries.BLOCK.get(MYCELIUM_LAYER_ID).defaultBlockState()), 3);
+                world.setBlock(targetPos, copyProperties(targetState, Compat.blockFromId(MYCELIUM_LAYER_ID).defaultBlockState()), 3);
             } else if (targetId.equals(VLP_DIRT_LAYER_ID) && isVLPMycelium) {
-                world.setBlock(targetPos, copyProperties(targetState, BuiltInRegistries.BLOCK.get(VLP_MYCELIUM_LAYER_ID).defaultBlockState()), 3);
-            } else if (targetId.toString().equals("minecraft:dirt")) {
+                world.setBlock(targetPos, copyProperties(targetState, Compat.blockFromId(VLP_MYCELIUM_LAYER_ID).defaultBlockState()), 3);
+            } else if (targetId.equals("minecraft:dirt")) {
                 world.setBlock(targetPos, Blocks.MYCELIUM.defaultBlockState(), 3);
             }
         }

@@ -1,18 +1,15 @@
 package io.arona74.aronalayersextras;
 
 import io.arona74.aronalayersextras.Compat;
-import net.minecraft.world.entity.animal.Sheep;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 
 public class SheepGrassEatingHandler {
-    private static final ResourceLocation GRASS_LAYER_ID = Compat.id("conquest", "grass_block_layer");
-    private static final ResourceLocation LOAMY_DIRT_SLAB_ID = Compat.id("conquest", "loamy_dirt_slab");
-    private static final ResourceLocation VLP_GRASS_LAYER_ID = Compat.id("vanillalayerplus", "grass_layer");
-    private static final ResourceLocation VLP_DIRT_LAYER_ID = Compat.id("vanillalayerplus", "dirt_layer");
+    private static final String GRASS_LAYER_ID = "conquest:grass_block_layer";
+    private static final String LOAMY_DIRT_SLAB_ID = "conquest:loamy_dirt_slab";
+    private static final String VLP_GRASS_LAYER_ID = "vanillalayerplus:grass_layer";
+    private static final String VLP_DIRT_LAYER_ID = "vanillalayerplus:dirt_layer";
 
     public static void register() {
         // We'll use a mixin instead for better integration
@@ -42,21 +39,23 @@ public class SheepGrassEatingHandler {
      * Called from the Sheep mixin when a sheep eats grass
      * Returns true if we handled the eating, false otherwise
      */
-    public static boolean tryEatGrassLayer(Sheep sheep) {
-        Level world = sheep.level();
-        BlockPos pos = sheep.blockPosition();
-
-        // Check the block at sheep's position
+    /**
+     * Takes the level and position rather than the sheep: 1.21.11 moved Sheep
+     * to net.minecraft.world.entity.animal.sheep, and shared code cannot name
+     * a type whose package differs per version.
+     */
+    public static boolean tryEatGrassLayer(Level world, BlockPos pos) {
+        // Check the block at the sheep's position
         BlockState state = world.getBlockState(pos);
 
-        ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(state.getBlock());
+        String blockId = Compat.blockId(state.getBlock());
 
         if (blockId.equals(GRASS_LAYER_ID)) {
-            world.setBlock(pos, copyProperties(state, BuiltInRegistries.BLOCK.get(LOAMY_DIRT_SLAB_ID).defaultBlockState()), 2);
+            world.setBlock(pos, copyProperties(state, Compat.blockFromId(LOAMY_DIRT_SLAB_ID).defaultBlockState()), 2);
             return true;
         }
         if (blockId.equals(VLP_GRASS_LAYER_ID)) {
-            world.setBlock(pos, copyProperties(state, BuiltInRegistries.BLOCK.get(VLP_DIRT_LAYER_ID).defaultBlockState()), 2);
+            world.setBlock(pos, copyProperties(state, Compat.blockFromId(VLP_DIRT_LAYER_ID).defaultBlockState()), 2);
             return true;
         }
 

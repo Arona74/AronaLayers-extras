@@ -1,0 +1,18 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "io.arona74.aronalayersextras.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "SheepEntityMixin",
+    "EatGrassGoalMixin",
+    "SpreadableBlockMixin",
+    "FallingBlockMixin",
+    "compat.MushroomVanillaMixin",
+    "compat.StateWithMixin"
+  ],
+  "client": [],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}
