@@ -1,5 +1,22 @@
 // Root project — aggregator only.
 // All build logic lives in the version subprojects (v1_20_1/, v1_21_1/).
+
+// Build outputs live outside the repository, because the repository is inside
+// OneDrive. OneDrive — and the VS Code Java language server — file-lock build/,
+// which makes Gradle fail with "Unable to delete directory" or "Failed to clean
+// up stale outputs". The dangerous variant is worse than a failure: the build
+// reports BUILD SUCCESSFUL while leaving the previous jar in place, so an
+// in-game test silently exercises stale code. Override with -PbuildDirRoot=<path>.
+def buildDirRoot = providers.gradleProperty('buildDirRoot')
+        .orElse(providers.environmentVariable('ARONALAYERS_BUILD_DIR'))
+        .getOrElse(System.getenv('LOCALAPPDATA')
+                ? "${System.getenv('LOCALAPPDATA')}/aronalayers-builds/extras"
+                : "${rootProject.projectDir}/build-out")
+
+allprojects {
+    layout.buildDirectory = file("${buildDirRoot}/${project.name}")
+}
+
 subprojects {
     repositories {
         maven {
