@@ -22,13 +22,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class StateWithMixin {
 
     @Shadow
-    public abstract boolean contains(Property<?> property);
+    public abstract boolean hasProperty(Property<?> property);
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     @Inject(method = "setValue", at = @At("HEAD"), cancellable = true)
     private <T extends Comparable<T>> void guardInvalidWith(
             Property<T> property, T value, CallbackInfoReturnable cir) {
-        if (!contains(property)) {
+        if (!hasProperty(property)) {
             cir.setReturnValue(this);
         }
     }
