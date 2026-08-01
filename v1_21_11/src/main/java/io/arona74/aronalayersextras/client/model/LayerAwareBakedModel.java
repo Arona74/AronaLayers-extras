@@ -46,14 +46,30 @@ public class LayerAwareBakedModel implements BlockStateModel {
         if (yOffset != 0f) emitter.popTransform();
     }
 
-    // createGeometryKey is deliberately NOT delegated to the wrapped model.
-    //
-    // The key lets the renderer reuse baked geometry between positions that
-    // share it, but this offset depends on the block *below*, not on the state
-    // being rendered. Forwarding the wrapped model's key would let a plant
-    // standing on a layer block reuse the geometry of an identical plant
-    // standing on full ground, and vice versa. The interface default returns
-    // null, meaning "not cacheable", which is the correct answer here.
+    /**
+     * Geometry key that accounts for the offset.
+     *
+     * The key lets the renderer reuse baked geometry between positions that
+     * share it. Forwarding the wrapped model's key unchanged would be wrong,
+     * because this offset depends on the block *below*: a plant on a layer
+     * block would reuse the geometry of the same plant on full ground. But
+     * simply returning null -- "never cacheable" -- is expensive now that every
+     * VegetationBlock is wrapped, and silently losing a cache is exactly the
+     * kind of regression that shows up as a stall rather than as a wrong
+     * picture.
+     *
+     * So compose the two: same wrapped geometry AND same offset means the same
+     * result, which is safe to share. A null from the wrapped model still means
+     * not cacheable and has to propagate.
+     */
+    @Override
+    public Object createGeometryKey(BlockAndTintGetter blockView, BlockPos pos,
+                                    BlockState state, RandomSource random) {
+        Object wrappedKey = wrapped.createGeometryKey(blockView, pos, state, random);
+        if (wrappedKey == null) return null;
+        float yOffset = LayerOffsetHooks.computeOffset(blockView, pos);
+        return yOffset == 0f ? wrappedKey : List.of(wrappedKey, yOffset);
+    }
 
     @Override
     public void collectParts(RandomSource random, List<BlockModelPart> parts) {

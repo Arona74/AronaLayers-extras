@@ -3,33 +3,11 @@ package io.arona74.aronalayersextras.client.model;
 import io.arona74.aronalayersextras.Compat;
 import io.arona74.aronalayersextras.ModConfig;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
+import net.minecraft.world.level.block.VegetationBlock;
 
 import java.util.Set;
 
 public class PlantLayerModelPlugin implements ModelLoadingPlugin {
-
-    /**
-     * Canonical block ids rather than the bare model paths the older modules
-     * match on. 1.21.11's after-bake hook hands us the BlockState directly
-     * instead of a model identifier, so the block id is both available and a
-     * more precise thing to match.
-     */
-    private static final Set<String> TARGET_PLANTS = Set.of(
-            "minecraft:short_grass", "minecraft:tall_grass", "minecraft:fern",
-            "minecraft:large_fern", "minecraft:dead_bush",
-            "minecraft:dandelion", "minecraft:poppy", "minecraft:blue_orchid",
-            "minecraft:allium", "minecraft:azure_bluet",
-            "minecraft:red_tulip", "minecraft:orange_tulip", "minecraft:white_tulip",
-            "minecraft:pink_tulip", "minecraft:oxeye_daisy", "minecraft:cornflower",
-            "minecraft:lily_of_the_valley", "minecraft:wither_rose",
-            "minecraft:torchflower", "minecraft:pitcher_plant",
-            "minecraft:sunflower", "minecraft:lilac", "minecraft:rose_bush", "minecraft:peony",
-            "minecraft:oak_sapling", "minecraft:spruce_sapling", "minecraft:birch_sapling",
-            "minecraft:jungle_sapling", "minecraft:acacia_sapling", "minecraft:dark_oak_sapling",
-            "minecraft:cherry_sapling", "minecraft:mangrove_propagule",
-            "minecraft:seagrass", "minecraft:tall_seagrass",
-            "minecraft:brown_mushroom", "minecraft:red_mushroom"
-    );
 
     @Override
     public void initialize(Context ctx) {
@@ -37,11 +15,30 @@ public class PlantLayerModelPlugin implements ModelLoadingPlugin {
 
         ctx.modifyBlockModelAfterBake().register((model, context) -> {
             if (model == null) return null;
-            String id = Compat.blockId(context.state().getBlock());
-            if (ModConfig.getInstance().VanillaBlockOffset && TARGET_PLANTS.contains(id)) {
+
+            // Match on the block's type rather than on a hand-maintained id
+            // list. The older modules carry such a list, and by 1.21.11 it had
+            // silently rotted: bush, firefly_bush, leaf_litter, wildflowers,
+            // short_dry_grass, tall_dry_grass, cactus_flower, pale_oak_sapling,
+            // pale_hanging_moss and pale_moss_carpet all render without the
+            // offset and float above layer blocks. A list cannot be kept
+            // correct across versions; the type can.
+            //
+            // VegetationBlock, NOT BushBlock. 1.21.11 renamed the old
+            // BushBlock to VegetationBlock and then reused the name BushBlock
+            // for a narrow subclass of it -- matching BushBlock compiles and
+            // silently catches only a fraction of plants, minecraft:bush among
+            // them but almost nothing else.
+            //
+            // Widening the match is safe because the offset is self-gating:
+            // computeOffset returns 0 unless the block below has a
+            // partial-height shape, so crops on farmland and plants on full
+            // blocks are unaffected.
+            if (ModConfig.getInstance().VanillaBlockOffset
+                    && context.state().getBlock() instanceof VegetationBlock) {
                 return new LayerAwareBakedModel(model);
             }
-            if (additional.contains(id)) {
+            if (additional.contains(Compat.blockId(context.state().getBlock()))) {
                 return new LayerAwareBakedModel(model);
             }
             return model;
