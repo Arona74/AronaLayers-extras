@@ -1,7 +1,6 @@
 package io.arona74.aronalayersextras;
 
 import io.arona74.aronalayersextras.Compat;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.server.level.ServerLevel;
@@ -20,7 +19,7 @@ public class GrassSpreadHandler {
     private static final Random RANDOM = new Random();
 
     public static void register() {
-        ServerTickEvents.END_WORLD_TICK.register(GrassSpreadHandler::onWorldTick);
+        Compat.onEndLevelTick(GrassSpreadHandler::onWorldTick);
         AronaLayersExtras.LOGGER.info("Registered grass spreading handler");
     }
 

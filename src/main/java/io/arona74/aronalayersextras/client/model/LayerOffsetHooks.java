@@ -3,7 +3,7 @@ package io.arona74.aronalayersextras.client.model;
 import io.arona74.aronalayersextras.ModConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
@@ -12,15 +12,22 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
  * How far to shift a plant down so it sits on the surface of a partial-height
  * layer block below it.
  *
- * This is shared across every supported version because none of the types it
- * touches changed. The model wrapper that calls it cannot be shared: 1.21.11
- * renamed BakedModel to BlockStateModel and dropped the item-model side of the
- * interface, so each module carries its own wrapper holding only the signature.
+ * Shared across every supported version. It takes a BlockGetter rather than the
+ * BlockAndTintGetter the callers hand it, deliberately: 26.2 moved
+ * BlockAndTintGetter from net.minecraft.world.level into a client package,
+ * which would otherwise force this whole file to be duplicated per module.
+ * BlockGetter is its supertype, has not moved, and is what getBlockState,
+ * getCollisionShape and getShape actually require.
+ *
+ * The model wrapper that calls this still cannot be shared: 1.21.11 renamed
+ * BakedModel to BlockStateModel and dropped the item-model side of the
+ * interface, and 26.2 moved it again, so each module carries its own wrapper
+ * holding only the signature.
  */
 public final class LayerOffsetHooks {
     private LayerOffsetHooks() {}
 
-    public static float computeOffset(BlockAndTintGetter blockView, BlockPos pos) {
+    public static float computeOffset(BlockGetter blockView, BlockPos pos) {
         if (!ModConfig.getInstance().enableBlockOffset) return 0f;
 
         BlockState below = blockView.getBlockState(pos.below());
@@ -38,7 +45,7 @@ public final class LayerOffsetHooks {
         return 0f;
     }
 
-    private static float yOffsetFor(BlockState state, BlockAndTintGetter blockView, BlockPos pos) {
+    private static float yOffsetFor(BlockState state, BlockGetter blockView, BlockPos pos) {
         // Prefer collision shape: it defines the actual surface entities stand on,
         // which is what matters for plant placement. Some modded layer blocks (e.g.
         // VanillaLayer+) leave the outline shape at the default full cube while

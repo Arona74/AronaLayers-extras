@@ -1,13 +1,13 @@
 package io.arona74.aronalayersextras.client.model;
 
-import net.fabricmc.fabric.api.renderer.v1.mesh.QuadEmitter;
-import net.minecraft.client.renderer.block.model.BlockModelPart;
-import net.minecraft.client.renderer.block.model.BlockStateModel;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.fabricmc.fabric.api.client.renderer.v1.mesh.QuadEmitter;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
+import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.List;
@@ -17,10 +17,15 @@ import java.util.function.Predicate;
  * Shifts a plant's quads down so it sits on the surface of a partial-height
  * layer block below it.
  *
- * 1.21.11 replaced BakedModel with BlockStateModel and dropped the item side of
- * the interface entirely, so this wrapper cannot be shared with the older
- * modules. The offset maths itself is version-independent and lives in
- * LayerOffsetHooks.
+ * 26.2 moves everything this touches again: BlockStateModel to
+ * net.minecraft.client.renderer.block.dispatch, BlockModelPart to
+ * BlockStateModelPart, BlockAndTintGetter into a client package, and the whole
+ * Fabric renderer API from net.fabricmc.fabric.api.renderer.v1 to
+ * net.fabricmc.fabric.api.client.renderer.v1. particleIcon also became
+ * particleMaterial, returning a baked Material rather than a sprite, and
+ * materialFlags is new.
+ *
+ * The offset maths itself is version-independent and lives in LayerOffsetHooks.
  */
 public class LayerAwareBakedModel implements BlockStateModel {
 
@@ -49,18 +54,13 @@ public class LayerAwareBakedModel implements BlockStateModel {
     /**
      * Geometry key that accounts for the offset.
      *
-     * The key lets the renderer reuse baked geometry between positions that
-     * share it. Forwarding the wrapped model's key unchanged would be wrong,
-     * because this offset depends on the block *below*: a plant on a layer
-     * block would reuse the geometry of the same plant on full ground. But
-     * simply returning null -- "never cacheable" -- is expensive now that every
-     * VegetationBlock is wrapped, and silently losing a cache is exactly the
-     * kind of regression that shows up as a stall rather than as a wrong
-     * picture.
-     *
-     * So compose the two: same wrapped geometry AND same offset means the same
-     * result, which is safe to share. A null from the wrapped model still means
-     * not cacheable and has to propagate.
+     * Forwarding the wrapped model's key unchanged would be wrong, because this
+     * offset depends on the block *below*: a plant on a layer block would reuse
+     * the geometry of the same plant on flat ground. Returning null -- never
+     * cacheable -- is correct but expensive now that every VegetationBlock is
+     * wrapped. Composing the two is both: same wrapped geometry and same offset
+     * means the same result. A null from the wrapped model still means not
+     * cacheable and has to propagate.
      */
     @Override
     public Object createGeometryKey(BlockAndTintGetter blockView, BlockPos pos,
@@ -72,17 +72,27 @@ public class LayerAwareBakedModel implements BlockStateModel {
     }
 
     @Override
-    public void collectParts(RandomSource random, List<BlockModelPart> parts) {
+    public void collectParts(RandomSource random, List<BlockStateModelPart> parts) {
         wrapped.collectParts(random, parts);
     }
 
     @Override
-    public TextureAtlasSprite particleIcon() {
-        return wrapped.particleIcon();
+    public Material.Baked particleMaterial() {
+        return wrapped.particleMaterial();
     }
 
     @Override
-    public TextureAtlasSprite particleSprite(BlockAndTintGetter blockView, BlockPos pos, BlockState state) {
-        return wrapped.particleSprite(blockView, pos, state);
+    public Material.Baked particleMaterial(BlockAndTintGetter blockView, BlockPos pos, BlockState state) {
+        return wrapped.particleMaterial(blockView, pos, state);
+    }
+
+    @Override
+    public int materialFlags() {
+        return wrapped.materialFlags();
+    }
+
+    @Override
+    public int materialFlags(BlockAndTintGetter blockView, BlockPos pos, BlockState state, RandomSource random) {
+        return wrapped.materialFlags(blockView, pos, state, random);
     }
 }

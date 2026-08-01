@@ -1,6 +1,7 @@
 package io.arona74.aronalayersextras;
 
 import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
@@ -68,5 +69,16 @@ public final class Compat {
 
     public static boolean doMobGriefing(Level world) {
         return world.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);
+    }
+
+    /**
+     * Register a handler that runs at the end of each server level tick.
+     *
+     * Fabric API renamed ServerTickEvents.END_WORLD_TICK to END_LEVEL_TICK for
+     * 26.2. The event is a Fabric name rather than a Minecraft one, but it is
+     * still a name shared code cannot spell for every version.
+     */
+    public static void onEndLevelTick(java.util.function.Consumer<ServerLevel> handler) {
+        ServerTickEvents.END_WORLD_TICK.register(handler::accept);
     }
 }
