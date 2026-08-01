@@ -5,6 +5,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.GameRules;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelHeightAccessor;
 
@@ -61,7 +62,7 @@ public final class Compat {
         return world.getMinBuildHeight();
     }
 
-    public static int randomTickSpeed(Level world) {
+    public static int randomTickSpeed(ServerLevel world) {
         return world.getGameRules().getInt(GameRules.RULE_RANDOMTICKING);
     }
 

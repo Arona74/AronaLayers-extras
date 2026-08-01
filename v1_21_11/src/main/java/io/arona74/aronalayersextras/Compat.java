@@ -3,6 +3,7 @@ package io.arona74.aronalayersextras;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.gamerules.GameRules;
@@ -55,11 +56,21 @@ public final class Compat {
         return world.getMinY();
     }
 
-    public static int randomTickSpeed(Level world) {
-        return world.getGameRules().getInt(GameRules.RULE_RANDOMTICKING);
+    // 1.21.11 rebuilt the gamerule system: the rules moved to
+    // net.minecraft.world.level.gamerules, the constants were renamed
+    // (RULE_RANDOMTICKING -> RANDOM_TICK_SPEED, RULE_MOBGRIEFING ->
+    // MOB_GRIEFING), and the typed getInt/getBoolean accessors collapsed into
+    // one generic get(GameRule<T>), reached via getLevelData().
+    public static int randomTickSpeed(ServerLevel world) {
+        return world.getGameRules().get(GameRules.RANDOM_TICK_SPEED);
     }
 
     public static boolean doMobGriefing(Level world) {
-        return world.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);
+        // Level no longer declares getGameRules on 1.21.11; only ServerLevel
+        // does. The only caller is the sheep eating goal, which ticks
+        // server-side, so a client-side Level answering false is unreachable
+        // rather than a behaviour change.
+        return world instanceof ServerLevel server
+                && server.getGameRules().get(GameRules.MOB_GRIEFING);
     }
 }
