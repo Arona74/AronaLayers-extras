@@ -137,13 +137,11 @@ def check(jar, mc_jar, deobf):
 def main():
     bad = 0
     for mod in sys.argv[1:]:
-        # build/ is redirected out of OneDrive (see the root build.gradle), so
-        # look there as well as in-tree. Checking a stale in-tree jar would
-        # defeat the point of this script.
+        # Normally the module's own build/libs. Also honours ARONALAYERS_BUILD_DIR,
+        # the opt-in output redirect in the root build.gradle, so this keeps
+        # checking the right jar when that is in use.
         roots = [os.path.join(mod, "build/libs/*.jar")]
-        out = os.environ.get("ARONALAYERS_BUILD_DIR") or (
-            os.path.join(os.environ["LOCALAPPDATA"], "aronalayers-builds", "extras")
-            if os.environ.get("LOCALAPPDATA") else None)
+        out = os.environ.get("ARONALAYERS_BUILD_DIR")
         if out:
             roots.append(os.path.join(out, os.path.basename(mod.rstrip("/\\")), "libs/*.jar"))
         jars = [x for r in roots for x in glob.glob(r) if "sources" not in x]
