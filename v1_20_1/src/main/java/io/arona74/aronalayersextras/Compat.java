@@ -81,4 +81,17 @@ public final class Compat {
     public static void onEndLevelTick(java.util.function.Consumer<ServerLevel> handler) {
         ServerTickEvents.END_WORLD_TICK.register(handler::accept);
     }
+
+    /**
+     * Renderer mod the client needs for the plant offset (Fabric Rendering API).
+     *
+     * Sodium is still 0.5.x here and does not implement the Fabric Rendering API, so Indium provides it.
+     * Checked from the client entrypoint rather than declared in fabric.mod.json
+     * "depends": the loader enforces "depends" on dedicated servers too, where a
+     * client-only renderer mod cannot be installed.
+     */
+    public static final String RENDERER_MOD_ID = "indium";
+    public static final String RENDERER_VERSION = "*";
+    public static final String RENDERER_NAME = "Indium";
+    public static final String RENDERER_URL = "https://modrinth.com/mod/indium";
 }

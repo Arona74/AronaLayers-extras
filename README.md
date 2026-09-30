@@ -92,6 +92,8 @@ The plant visual offset is drawn through the Fabric Rendering API, so a provider
 | 1.20.1 | [Indium](https://modrinth.com/mod/indium) — Sodium is still 0.5.x here, which does not implement the Fabric Rendering API |
 | 1.21.1, 1.21.11, 26.1.2, 26.2 | [Sodium](https://modrinth.com/mod/sodium) 0.6.0+ — it implements the API natively |
 
+> **Client only.** The renderer is required on the client (and in singleplayer), which refuses to start without it. Dedicated servers do not need it — do not install it there.
+
 > **Do not install Indium on 1.21.1 or newer.** It is unnecessary there and is not compatible with Sodium 0.6.0+.
 
 Plus a layer block provider:
