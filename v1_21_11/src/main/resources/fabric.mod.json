@@ -17,9 +17,6 @@
     "main": [
       "io.arona74.aronalayersextras.AronaLayersExtras"
     ],
-    "client": [
-      "io.arona74.aronalayersextras.client.AronaLayersExtrasClient"
-    ],
     "modmenu": [
       "io.arona74.aronalayersextras.ModMenuIntegration"
     ]
@@ -34,7 +31,7 @@
     "java": ">=21"
   },
   "suggests": {
-    "sodium": ">=0.6.0",
+    "aronalayersgen": ">=1.3.0",
     "conquestre": "*",
     "modmenu": "*",
     "cloth-config2": "*"

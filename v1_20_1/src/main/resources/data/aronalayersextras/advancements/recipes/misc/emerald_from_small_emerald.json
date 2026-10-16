@@ -1,0 +1,35 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_small_emerald": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "aronalayersextras:small_emerald"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "aronalayersextras:emerald_from_small_emerald"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_small_emerald"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "aronalayersextras:emerald_from_small_emerald"
+    ]
+  },
+  "sends_telemetry_event": false
+}

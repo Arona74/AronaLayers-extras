@@ -15,7 +15,7 @@ This mod closes those gaps. It needs a **layer block provider** to be useful:
 | **Conquest Reforged** | `grass_block_layer`, `loamy_dirt_slab`, `mycelium_layer` and the rest of the CR layer set |
 | **VanillaLayer+** | `grass_layer`, `dirt_layer`, `mycelium_layer` |
 
-Both can be installed at once — each feature activates only for the blocks it finds. With neither installed the mod loads and does nothing harmful; the plant visual offset still works on vanilla partial-height blocks such as snow layers.
+Both can be installed at once — each feature activates only for the blocks it finds. With neither installed the mod loads and does nothing harmful.
 
 ## Features
 
@@ -52,18 +52,7 @@ Both can be installed at once — each feature activates only for the blocks it 
 
 > Rocks are matched on the `_rocks` suffix, which is plural throughout Conquest and only ever used for the loose ground clutter — the solid blocks they are cut from are singular (`conquest:mudstone`, `conquest:dark_tuff`), so they stay put. New Conquest stone types are picked up without a mod update.
 
-### 6. Plant Visual Offset on Layer Blocks
-- Plants and flowers placed on partial-height layer blocks are shifted downward visually to sit flush with the layer surface
-- Works for tall plants too (both lower and upper half are offset correctly)
-- Applies to vanilla plants by default (flowers, tall grass, saplings, mushrooms, etc.)
-- Extra plants from other mods (e.g. `conquest:seagrass`) can be added via the config
-- Purely visual — it does not change collision, placement rules or what the server thinks is there
-
-> **1.21.11 and newer pick vanilla plants by block type** (anything in the `minecraft` namespace extending `VegetationBlock`), so plants added by newer Minecraft versions — `bush`, `firefly_bush`, `leaf_litter`, `wildflowers`, `short_dry_grass`, `cactus_flower` and so on — are handled automatically. 1.20.1 and 1.21.1 use a fixed list of the plants that exist on those versions. `AdditionalOffsetBlocks` works the same way on all six.
-
-> **Modded plants are never picked up automatically**, on any version. Most Conquest Reforged plants already sit correctly on layer blocks by themselves — they track the layer height in their own blockstate — so offsetting them again would push them into the block below. Only add a modded plant to `AdditionalOffsetBlocks` if you can see it floating.
-
-### 7. Wet Sand Near Water (Conquest Reforged)
+### 6. Wet Sand Near Water (Conquest Reforged)
 
 - Sand touching water turns into the Conquest wet variant — `minecraft:sand` → `conquest:wet_sand`, `conquest:tan_sand_layer` → `conquest:wet_tan_sand_layer`, and so on
 - "Touching water" means water on any of the six faces, a waterlogged neighbour, or the block being waterlogged itself
@@ -75,6 +64,24 @@ Both can be installed at once — each feature activates only for the blocks it 
 
 > Only near-surface blocks are scanned — 32 blocks down from the top of each column. Sand at the bottom of a deep ocean, or sealed in a cave next to a waterlogged block, is left alone.
 
+### 7. Small Ores from Ore Layers (VanillaLayer+)
+
+- VanillaLayer+ ore layers mined without Silk Touch drop **small ores** and experience in proportion to their layers, instead of the layers themselves
+- Eight small ores craft (ring of 8 in a crafting table) into the normal drop, so a full 8-layer stack is worth exactly one ore block
+
+| Ore layer | Drop per layer | Crafts into |
+|-----------|----------------|-------------|
+| coal, iron, gold, diamond, emerald (stone and deepslate) | 1 Small Coal / Raw Iron / Raw Gold / Diamond / Emerald | 8 → 1 coal / raw iron / raw gold / diamond / emerald |
+| copper (stone and deepslate) | 2–5 Small Raw Copper (copper ore drops 2–5) | 8 → 1 raw copper |
+| redstone, lapis, nether gold, nether quartz | one eighth of the ore's vanilla drop (redstone, lapis, gold nuggets, quartz), randomly rounded | — |
+
+- Fortune works as on the ore itself; experience is one eighth of the ore's per layer
+- Silk Touch keeps dropping the layers, so they can still be collected for building
+- The small ores reuse the vanilla item textures, drawn as a small pile of three pieces — no new textures
+- Toggle with `enableSmallOreDrops`
+
+> **Plant visual offset has moved.** Since 1.3.0, lowering plants onto layer blocks is part of [AronaLayers-gen](https://github.com/Arona74/AronaLayers-gen) 1.3.0+ (`plant_grounding`), which detects plants automatically and also lowers their selection and collision boxes. Arona Layers Extras 1.3.0 no longer has the offset, and gen 1.3.0 refuses to load beside an older Extras so plants are never lowered twice.
+
 ## Requirements
 
 | Minecraft | Fabric Loader | Fabric API | Java |
@@ -85,17 +92,6 @@ Both can be installed at once — each feature activates only for the blocks it 
 | 26.1.2 | 0.19.0+ | 0.154.2+ | 25 |
 | 26.2 | 0.19.0+ | 0.156.0+ | 25 |
 | 26.3 | 0.19.0+ | 0.162.0+ | 25 |
-
-The plant visual offset is drawn through the Fabric Rendering API, so a provider for that API is required:
-
-| Minecraft | Renderer requirement |
-|-----------|----------------------|
-| 1.20.1 | [Indium](https://modrinth.com/mod/indium) — Sodium is still 0.5.x here, which does not implement the Fabric Rendering API |
-| 1.21.1, 1.21.11, 26.1.2, 26.2, 26.3 | [Sodium](https://modrinth.com/mod/sodium) 0.6.0+ — it implements the API natively |
-
-> **Client only.** The renderer is required on the client (and in singleplayer), which refuses to start without it. Dedicated servers do not need it — do not install it there.
-
-> **Do not install Indium on 1.21.1 or newer.** It is unnecessary there and is not compatible with Sodium 0.6.0+.
 
 Plus a layer block provider:
 
@@ -114,11 +110,10 @@ Plus a layer block provider:
 ## Installation
 
 1. Install Fabric Loader and Fabric API for your Minecraft version (see the table above)
-2. Install the renderer requirement for your version — Indium on 1.20.1, Sodium 0.6.0+ on 1.21.1 and newer
-3. Install Conquest Reforged and/or VanillaLayer+
-4. Optionally install Mod Menu **and** Cloth Config together, for the in-game config screen
-5. Place the mod JAR **for your Minecraft version** in your mods folder
-6. Launch once to generate `config/aronalayersextras.json`
+2. Install Conquest Reforged and/or VanillaLayer+
+3. Optionally install Mod Menu **and** Cloth Config together, for the in-game config screen
+4. Place the mod JAR **for your Minecraft version** in your mods folder
+5. Launch once to generate `config/aronalayersextras.json`
 
 ## Configuration
 
@@ -134,9 +129,7 @@ All features can be toggled individually. The config file is `config/aronalayers
 | `AdditionalFallingBlocks` | `[]` | Extra block IDs that should also fall with the sand/gravel below them. JSON-only; picked up on the next launch |
 | `enableWetSands` | `true` | CR sand blocks touching water turn wet, and dry back when the water goes |
 | `WetSandMappings` | the six pairs below | Dry block → wet block pairs, read in both directions. Pairs whose blocks are not both registered are ignored |
-| `enableBlockOffset` | `true` | Plants are visually shifted down on partial-height layer blocks |
-| `VanillaBlockOffset` | `true` | Vanilla plants receive the visual offset. Set to `false` to restrict the offset to `AdditionalOffsetBlocks` only. **Requires F3+T to take effect.** |
-| `AdditionalOffsetBlocks` | `["conquest:seagrass", "conquest:tall_seagrass", "minecraft:pink_petals"]` | Extra plant block IDs from other mods that also receive the visual offset. **Requires F3+T to take effect.** |
+| `enableSmallOreDrops` | `true` | VanillaLayer+ ore layers drop small ores and experience per layer instead of the layers (Silk Touch keeps the layers) |
 
 `WetSandMappings` defaults to:
 
@@ -171,7 +164,7 @@ Edits to it are picked up on the next launch.
 
 ### Mod Menu Support
 
-Both mods are optional. With [Mod Menu](https://modrinth.com/mod/modmenu) and [Cloth Config](https://modrinth.com/mod/cloth-config) installed, most settings can be changed in-game through the Mod Menu config screen; without them, every setting is still available by editing the JSON. Changes take effect immediately without restarting — except `VanillaBlockOffset` and `AdditionalOffsetBlocks`, which are applied at model bake time and need a resource reload (F3+T). `WetSandMappings` is JSON-only; the `enableWetSands` toggle beside it is not.
+Both mods are optional. With [Mod Menu](https://modrinth.com/mod/modmenu) and [Cloth Config](https://modrinth.com/mod/cloth-config) installed, most settings can be changed in-game through the Mod Menu config screen; without them, every setting is still available by editing the JSON. Changes take effect immediately without restarting. `WetSandMappings` is JSON-only; the `enableWetSands` toggle beside it is not.
 
 ## Building from Source
 

@@ -9,7 +9,8 @@
     "SpreadableBlockMixin",
     "FallingBlockMixin",
     "compat.MushroomVanillaMixin",
-    "compat.StateWithMixin"
+    "compat.StateWithMixin",
+    "OreLayerDropMixin"
   ],
   "client": [],
   "injectors": {

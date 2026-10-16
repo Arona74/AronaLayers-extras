@@ -1,6 +1,5 @@
 package io.arona74.aronalayersextras;
 
-import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -34,14 +33,6 @@ public final class Compat {
      */
     public static Block blockFromId(String id) {
         return BuiltInRegistries.BLOCK.get(new ResourceLocation(id));
-    }
-
-    public static String modelIdNamespace(ModelResourceLocation id) {
-        return id.getNamespace();
-    }
-
-    public static String modelIdPath(ModelResourceLocation id) {
-        return id.getPath();
     }
 
     /**
@@ -82,16 +73,32 @@ public final class Compat {
         ServerTickEvents.END_WORLD_TICK.register(handler::accept);
     }
 
-    /**
-     * Renderer mod the client needs for the plant offset (Fabric Rendering API).
-     *
-     * Sodium is still 0.5.x here and does not implement the Fabric Rendering API, so Indium provides it.
-     * Checked from the client entrypoint rather than declared in fabric.mod.json
-     * "depends": the loader enforces "depends" on dedicated servers too, where a
-     * client-only renderer mod cannot be installed.
-     */
-    public static final String RENDERER_MOD_ID = "indium";
-    public static final String RENDERER_VERSION = "*";
-    public static final String RENDERER_NAME = "Indium";
-    public static final String RENDERER_URL = "https://modrinth.com/mod/indium";
+    /** Fortune level of a tool. 1.20.1 still has enchantments as plain objects (BLOCK_FORTUNE). */
+    public static int fortuneLevel(ServerLevel level, net.minecraft.world.item.ItemStack tool) {
+        return net.minecraft.world.item.enchantment.EnchantmentHelper.getItemEnchantmentLevel(
+                net.minecraft.world.item.enchantment.Enchantments.BLOCK_FORTUNE, tool);
+    }
+
+    public static int silkTouchLevel(ServerLevel level, net.minecraft.world.item.ItemStack tool) {
+        return net.minecraft.world.item.enchantment.EnchantmentHelper.getItemEnchantmentLevel(
+                net.minecraft.world.item.enchantment.Enchantments.SILK_TOUCH, tool);
+    }
+
+    /** The doTileDrops game rule. */
+    public static boolean doBlockDrops(ServerLevel level) {
+        return level.getGameRules().getBoolean(GameRules.RULE_DOBLOCKDROPS);
+    }
+
+    public static net.minecraft.world.item.Item.Properties itemProperties(String path) {
+        return new net.minecraft.world.item.Item.Properties();
+    }
+
+    public static net.minecraft.world.item.Item registerItem(String path, net.minecraft.world.item.Item item) {
+        return net.minecraft.core.Registry.register(BuiltInRegistries.ITEM, new ResourceLocation(AronaLayersExtras.MOD_ID, path), item);
+    }
+
+    public static void addToIngredientsTab(java.util.List<net.minecraft.world.item.Item> items) {
+        net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents.modifyEntriesEvent(
+                net.minecraft.world.item.CreativeModeTabs.INGREDIENTS).register(entries -> items.forEach(entries::accept));
+    }
 }

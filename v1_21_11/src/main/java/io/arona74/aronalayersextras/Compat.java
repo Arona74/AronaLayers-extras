@@ -86,16 +86,40 @@ public final class Compat {
         ServerTickEvents.END_WORLD_TICK.register(handler::accept);
     }
 
-    /**
-     * Renderer mod the client needs for the plant offset (Fabric Rendering API).
-     *
-     * Sodium 0.6.0+ implements the Fabric Rendering API natively. Indium must NOT be installed alongside it.
-     * Checked from the client entrypoint rather than declared in fabric.mod.json
-     * "depends": the loader enforces "depends" on dedicated servers too, where a
-     * client-only renderer mod cannot be installed.
-     */
-    public static final String RENDERER_MOD_ID = "sodium";
-    public static final String RENDERER_VERSION = ">=0.6.0";
-    public static final String RENDERER_NAME = "Sodium 0.6.0+";
-    public static final String RENDERER_URL = "https://modrinth.com/mod/sodium";
+    /** Fortune level of a tool. Enchantments are data-driven from 1.21: looked up through the registry. */
+    public static int fortuneLevel(ServerLevel level, net.minecraft.world.item.ItemStack tool) {
+        return enchantmentLevel(level, net.minecraft.world.item.enchantment.Enchantments.FORTUNE, tool);
+    }
+
+    public static int silkTouchLevel(ServerLevel level, net.minecraft.world.item.ItemStack tool) {
+        return enchantmentLevel(level, net.minecraft.world.item.enchantment.Enchantments.SILK_TOUCH, tool);
+    }
+
+    private static int enchantmentLevel(ServerLevel level,
+            net.minecraft.resources.ResourceKey<net.minecraft.world.item.enchantment.Enchantment> key,
+            net.minecraft.world.item.ItemStack tool) {
+        return net.minecraft.world.item.enchantment.EnchantmentHelper.getItemEnchantmentLevel(
+                level.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getOrThrow(key),
+                tool);
+    }
+
+    /** The block drops game rule (doTileDrops before 1.21.11 renamed it). */
+    public static boolean doBlockDrops(ServerLevel level) {
+        return level.getGameRules().get(GameRules.BLOCK_DROPS);
+    }
+
+    /** Items must know their own id at construction from 1.21.2. */
+    public static net.minecraft.world.item.Item.Properties itemProperties(String path) {
+        return new net.minecraft.world.item.Item.Properties().setId(net.minecraft.resources.ResourceKey.create(
+                net.minecraft.core.registries.Registries.ITEM, Identifier.fromNamespaceAndPath(AronaLayersExtras.MOD_ID, path)));
+    }
+
+    public static net.minecraft.world.item.Item registerItem(String path, net.minecraft.world.item.Item item) {
+        return net.minecraft.core.Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(AronaLayersExtras.MOD_ID, path), item);
+    }
+
+    public static void addToIngredientsTab(java.util.List<net.minecraft.world.item.Item> items) {
+        net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents.modifyEntriesEvent(
+                net.minecraft.world.item.CreativeModeTabs.INGREDIENTS).register(entries -> items.forEach(entries::accept));
+    }
 }

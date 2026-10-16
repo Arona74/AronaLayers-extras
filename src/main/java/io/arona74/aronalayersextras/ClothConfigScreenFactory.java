@@ -70,18 +70,12 @@ final class ClothConfigScreenFactory {
                     .build());
 
             general.addEntry(entryBuilder.startBooleanToggle(
-                            Component.literal("Plant Offset on Layer Blocks"), config.enableBlockOffset)
+                            Component.literal("Small Ores from Ore Layers"), config.enableSmallOreDrops)
                     .setDefaultValue(true)
-                    .setTooltip(Component.literal("Shifts plants/flowers down visually when placed on partial-height layer blocks."))
-                    .setSaveConsumer(val -> config.enableBlockOffset = val)
+                    .setTooltip(Component.literal("VanillaLayer+ ore layers mined without Silk Touch drop small ores (small raw iron, small diamond...) and experience in proportion to their layers, instead of the layers themselves. Eight small ores craft into the normal ore drop."))
+                    .setSaveConsumer(val -> config.enableSmallOreDrops = val)
                     .build());
 
-            general.addEntry(entryBuilder.startBooleanToggle(
-                            Component.literal("Vanilla Plant Offset"), config.VanillaBlockOffset)
-                    .setDefaultValue(true)
-                    .setTooltip(Component.literal("If on, vanilla plants (flowers, grass, saplings, etc.) receive the visual offset. If off, only blocks listed in 'AdditionalOffsetBlocks' in the JSON config get the offset. Requires resource reload (F3+T) to take effect."))
-                    .setSaveConsumer(val -> config.VanillaBlockOffset = val)
-                    .build());
 
             builder.setSavingRunnable(config::save);
             return builder.build();

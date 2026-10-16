@@ -8,7 +8,8 @@
     "EatGrassGoalMixin",
     "SpreadableBlockMixin",
     "FallingBlockMixin",
-    "compat.StateWithMixin"
+    "compat.StateWithMixin",
+    "OreLayerDropMixin"
   ],
   "client": [],
   "injectors": {
