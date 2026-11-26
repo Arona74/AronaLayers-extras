@@ -1,3 +1,21 @@
+> [!IMPORTANT]
+> **This mod is now part of [AronaLayers](https://github.com/Arona74/AronaLayers).** This repository is
+> archived and gets no further updates.
+>
+> AronaLayers is one mod holding the layer blocks, the generator (formerly AronaLayers-gen) and these
+> layer mechanics, on Fabric and now on NeoForge too. To move over, remove `aronalayersextras-…` from
+> your mods folder and install AronaLayers: it refuses to start next to this mod.
+>
+> - **Grass and mycelium spreading, sheep eating grass layers, grass decay prevention, layers falling
+>   with sand and small ore drops are all in AronaLayers**, in the Gameplay tab of its config screen
+>   (no Cloth Config needed). Your `config/aronalayersextras.json` is read once on the first start.
+> - **Small ore items with an `aronalayersextras:` id are not converted** in existing worlds.
+>   AronaLayers has them as `aronalayers:small_*`.
+> - **Wet sand and Conquest Reforged support are not in AronaLayers.** If you need them, keep the last
+>   release of this mod, [1.3.0](https://github.com/Arona74/AronaLayers-extras/releases/tag/1.3.0).
+>
+> The rest of this page describes the last release of this mod.
+
 # Arona Layers Extras
 
 A Fabric mod that makes layer blocks from **Conquest Reforged** and **VanillaLayer+** behave like their vanilla counterparts — grass spreads onto them, sheep eat them, they fall with sand, and plants sit flush on top of them.
